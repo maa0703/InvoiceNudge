@@ -1,15 +1,123 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
+}
+
+model User {
+  id                   String     @id @default(cuid())
+  clerkUserId          String     @unique
+  email                String     @unique
+  displayName          String     @default("")
+  replyToEmail         String
+  plan                 Plan       @default(FREE)
+  stripeCustomerId     String?
+  stripeSubscriptionId String?
+  createdAt            DateTime   @default(now())
+  updatedAt            DateTime   @updatedAt
+  deletedAt            DateTime?
+  clients              Client[]
+  invoices             Invoice[]
+  reminders            Reminder[]
+}
+
+model Client {
+  id        String    @id @default(cuid())
+  userId    String
+  name      String
+  email     String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  invoices  Invoice[]
+
+  @@unique([userId, email])
+}
+
+model Invoice {
+  id         String        @id @default(cuid())
+  userId     String
+  clientId   String
+  amount     Decimal       @db.Decimal(12, 2)
+  currency   Currency      @default(USD)
+  dueDate    DateTime      @db.Date
+  invoiceRef String?
+  status     InvoiceStatus @default(DRAFT)
+  paidAt     DateTime?
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  deletedAt  DateTime?
+  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  client     Client        @relation(fields: [clientId], references: [id], onDelete: Restrict)
+  reminders  Reminder[]
+
+  @@unique([userId, invoiceRef])
+  @@index([userId])
+  @@index([userId, status])
+}
+
+model Reminder {
+  id              String         @id @default(cuid())
+  invoiceId       String
+  userId          String
+  step            Int
+  scheduledAt     DateTime
+  checkinAt       DateTime
+  checkinToken    String         @unique
+  checkinSentAt   DateTime?
+  status          ReminderStatus @default(SCHEDULED)
+  cancelledReason String?
+  sentAt          DateTime?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  invoice         Invoice        @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  logs            ReminderLog[]
+
+  @@unique([invoiceId, step])
+  @@index([status, scheduledAt])
+  @@index([status, checkinAt])
+}
+
+model ReminderLog {
+  id         String   @id @default(cuid())
+  reminderId String
+  userId     String
+  event      String
+  providerId String?
+  errorMsg   String?
+  createdAt  DateTime @default(now())
+  reminder   Reminder @relation(fields: [reminderId], references: [id], onDelete: Cascade)
+
+  @@index([reminderId])
+}
+
+enum Plan {
+  FREE
+  PRO
+}
+
+enum InvoiceStatus {
+  DRAFT
+  ACTIVE
+  PAID
+  CANCELLED
+  EXHAUSTED
+  FAILED
+}
+
+enum ReminderStatus {
+  SCHEDULED
+  SENT
+  CANCELLED
+  FAILED
+}
+
+enum Currency {
+  USD
+  EUR
+  GBP
 }
