@@ -66,7 +66,7 @@ model Reminder {
   step            Int
   scheduledAt     DateTime
   checkinAt       DateTime
-  checkinToken    String         @unique
+  checkinToken    String?        @unique
   checkinSentAt   DateTime?
   status          ReminderStatus @default(SCHEDULED)
   cancelledReason String?

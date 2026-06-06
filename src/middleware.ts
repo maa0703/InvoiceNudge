@@ -4,7 +4,7 @@ const isPublicRoute = createRouteMatcher([
   '/',
   '/sign-in(.*)',
   '/sign-up(.*)',
-  '/api/v1/auth/(.*)',
+  '/api/v1/(.*)',       // API routes handle auth themselves → return JSON 401, not a redirect
   '/api/webhooks/(.*)',
   '/reminders/cancel(.*)',
 ])
