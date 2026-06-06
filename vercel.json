@@ -1,0 +1,7 @@
+{
+  "crons": [
+    { "path": "/api/v1/cron/checkins", "schedule": "*/5 * * * *" },
+    { "path": "/api/v1/cron/reminders", "schedule": "*/5 * * * *" },
+    { "path": "/api/v1/cron/expire-tokens", "schedule": "0 * * * *" }
+  ]
+}
