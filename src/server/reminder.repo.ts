@@ -160,3 +160,17 @@ export async function clearCheckinTokens(ids: string[]): Promise<void> {
     data: { checkinToken: null },
   })
 }
+
+export async function findByProviderId(
+  providerId: string,
+): Promise<ReminderWithInvoiceAndUser | null> {
+  const log = await db.reminderLog.findFirst({
+    where: { providerId },
+    select: { reminderId: true },
+  })
+  if (!log) return null
+  return db.reminder.findUnique({
+    where: { id: log.reminderId },
+    include: dueInclude,
+  })
+}

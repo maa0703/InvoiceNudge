@@ -1,29 +1,49 @@
 // pdf-parse ships CJS only; require() avoids the ESM interop mismatch
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const pdfParse = require('pdf-parse') as (
-  buf: Buffer,
-) => Promise<{ text: string; numpages: number }>
+const pdfParse = require('pdf-parse') as (buf: Buffer) => Promise<{ text: string; numpages: number }>
 
-export type ExtractedInvoice = {
-  amount?: string
-  dueDate?: string
-  invoiceRef?: string
-  clientEmail?: string
-  confidence: number // 0–1 fraction of fields successfully extracted
+const patterns = {
+  amount: /(?:total|amount due|balance due|amount)[^\d]*(\d{1,6}[.,]\d{2})/i,
+  dueDate: /(?:due date|payment due|pay by|due)[^\d]*(\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4})/i,
+  invoiceRef: /(?:invoice\s*(?:no|#|number)?|inv\s*(?:no|#)?)[^\w]*([\w\-]+)/i,
+  email: /[\w.+-]+@[\w-]+\.[a-z]{2,}/i,
 }
 
-// TODO: Implement regex extraction per field — no AI, pure pattern matching
+function normaliseDate(raw: string): string | null {
+  const parts = raw.split(/[\/\-\.]/)
+  if (parts.length !== 3) return null
+  const [a, b, c] = parts
+  if (c.length === 4) return `${c}-${b.padStart(2, '0')}-${a.padStart(2, '0')}`
+  if (a.length === 4) return `${a}-${b.padStart(2, '0')}-${c.padStart(2, '0')}`
+  return null
+}
+
+export type ExtractedInvoice = {
+  amount: number | null
+  dueDate: string | null
+  invoiceRef: string | null
+  clientEmail: string | null
+  confidence: 'high' | 'low'
+}
+
 export async function extractInvoiceFields(buffer: Buffer): Promise<ExtractedInvoice> {
-  const data = await pdfParse(buffer)
-  const text = data.text
+  const { text } = await pdfParse(buffer)
 
-  const amount = text.match(/\$\s*([\d,]+(?:\.\d{2})?)/)?.[1]?.replace(',', '')
-  const dueDate = text.match(/due\s*(?:date)?[:\s]+([\d]{4}-[\d]{2}-[\d]{2})/i)?.[1]
-  const invoiceRef = text.match(/invoice\s*(?:#|no\.?|number)?[:\s]+([A-Z0-9-]+)/i)?.[1]
-  const clientEmail = text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/)?.[0]
+  const rawAmount = text.match(patterns.amount)?.[1]?.replace(',', '.') ?? null
+  const rawDate = text.match(patterns.dueDate)?.[1] ?? null
+  const invoiceRef = text.match(patterns.invoiceRef)?.[1] ?? null
+  const clientEmail = text.match(patterns.email)?.[0] ?? null
 
-  const fields = [amount, dueDate, invoiceRef, clientEmail]
-  const confidence = fields.filter(Boolean).length / fields.length
+  const amount = rawAmount ? parseFloat(rawAmount) : null
+  const dueDate = rawDate ? normaliseDate(rawDate) : null
 
-  return { amount, dueDate, invoiceRef, clientEmail, confidence }
+  const nonNull = [amount, dueDate, clientEmail].filter(Boolean).length
+
+  return {
+    amount,
+    dueDate,
+    invoiceRef,
+    clientEmail,
+    confidence: nonNull >= 2 ? 'high' : 'low',
+  }
 }
