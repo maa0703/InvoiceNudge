@@ -1,14 +1,22 @@
-import Link from 'next/link'
-import { buttonVariants } from '@/components/ui/button'
+'use client'
+
+import { useSearchParams } from 'next/navigation'
+import { useEffect } from 'react'
+import { useToast } from '@/hooks/use-toast'
+import { DashboardContent } from '@/components/dashboard-content'
 
 export default function DashboardPage() {
-  return (
-    <div className="flex flex-col items-center justify-center py-24 gap-4 text-center">
-      <h1 className="text-2xl font-semibold text-gray-900">Welcome to InvoiceNudge</h1>
-      <p className="text-gray-500 text-sm">Create your first invoice and activate automated reminders.</p>
-      <Link href="/invoices/new" className={buttonVariants()}>
-        Create your first invoice
-      </Link>
-    </div>
-  )
+  const searchParams = useSearchParams()
+  const { toast } = useToast()
+
+  useEffect(() => {
+    if (searchParams.get('activated') === 'true') {
+      toast({
+        title: 'Reminders activated.',
+        description: "We'll check in before every send.",
+      })
+    }
+  }, [])
+
+  return <DashboardContent plan="FREE" />
 }

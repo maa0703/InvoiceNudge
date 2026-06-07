@@ -9,6 +9,13 @@ export type InvoiceWithReminders = Prisma.InvoiceGetPayload<{
   include: { reminders: { orderBy: { step: 'asc' } } }
 }>
 
+export type InvoiceWithDetails = Prisma.InvoiceGetPayload<{
+  include: {
+    client: true
+    reminders: { orderBy: { step: 'asc' } }
+  }
+}>
+
 export type CreateInvoiceData = {
   amount: Prisma.Decimal | string | number
   currency?: 'USD' | 'EUR' | 'GBP'
@@ -34,10 +41,13 @@ export async function findAllByUser(
 export async function findById(
   userId: string,
   invoiceId: string,
-): Promise<InvoiceWithReminders | null> {
+): Promise<InvoiceWithDetails | null> {
   return db.invoice.findFirst({
     where: { id: invoiceId, userId, deletedAt: null },
-    include: { reminders: { orderBy: { step: 'asc' } } },
+    include: {
+      client: true,
+      reminders: { orderBy: { step: 'asc' } },
+    },
   })
 }
 

@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { ClerkProvider } from '@clerk/nextjs'
+import { Toaster } from '@/components/ui/sonner'
 import './globals.css'
 
 const geistSans = Geist({
@@ -25,11 +26,12 @@ export default function RootLayout({
   return (
     <ClerkProvider
       signInFallbackRedirectUrl="/dashboard"
-      signUpFallbackRedirectUrl="/invoices/new"
+      signUpForceRedirectUrl="/invoices/new"
     >
       <html lang="en">
         <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
           {children}
+          <Toaster />
         </body>
       </html>
     </ClerkProvider>
