@@ -6,20 +6,16 @@ import { toast } from 'sonner'
 import { buttonVariants } from '@/components/ui/button'
 import { InvoiceRow, type InvoiceRowData } from '@/components/invoice-row'
 
-type Plan = 'FREE' | 'PRO'
-
-interface Props {
-  plan: Plan
-}
-
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
-export function DashboardContent({ plan }: Props) {
+export function DashboardContent({ plan: _propPlan }: { plan?: string }) {
   const { data, isLoading, mutate } = useSWR('/api/v1/invoices', fetcher, {
     refreshInterval: 30000,
   })
+  const { data: meData } = useSWR('/api/v1/users/me', fetcher)
 
   const invoices: InvoiceRowData[] = data?.invoices ?? []
+  const plan: string = meData?.user?.plan ?? _propPlan ?? 'FREE'
   const activeCount = invoices.filter(
     (inv) => inv.status === 'ACTIVE' || inv.status === 'DRAFT',
   ).length
