@@ -17,8 +17,8 @@ export default async function NewInvoicePage() {
   }
 
   return (
-    <div className="space-y-6 max-w-2xl">
-      <h1 className="text-2xl font-semibold text-gray-900">New Invoice</h1>
+    <div className="max-w-md mx-auto space-y-6">
+      <h1 className="text-2xl font-semibold text-[#111827]">Add invoice</h1>
       <InvoiceForm isBlocked={isBlocked} />
     </div>
   )

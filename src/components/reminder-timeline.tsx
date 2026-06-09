@@ -18,98 +18,130 @@ interface Props {
   onRetry?: (id: string) => Promise<void>
 }
 
-const STEP_LABEL = ['', 'Reminder 1 (day +5)', 'Reminder 2 (day +10)', 'Reminder 3 (day +15)', 'Reminder 4 (day +20)']
+const STEP_LABEL = ['', 'Reminder 1 (day +1)', 'Reminder 2 (day +5)', 'Reminder 3 (day +10)', 'Reminder 4 (day +20)']
 
-const STATUS_DOT: Record<ReminderStatus, string> = {
-  SCHEDULED: 'bg-blue-400',
-  SENT: 'bg-emerald-400',
-  CANCELLED: 'bg-gray-300',
-  FAILED: 'bg-red-400',
+function CheckIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+      <path d="M2 6l3 3 5-5" stroke="#059669" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function DashIcon() {
+  return (
+    <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+      <path d="M2 5h6" stroke="#94A3B8" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function XIcon() {
+  return (
+    <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+      <path d="M2 2l6 6M8 2l-6 6" stroke="#EF4444" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function DotIcon() {
+  return <div className="w-2 h-2 rounded-full" style={{ background: '#7C3AED' }} />
+}
+
+const CIRCLE: Record<ReminderStatus, { border: string; background: string; icon: React.ReactNode }> = {
+  SCHEDULED: { border: '#A78BFA', background: '#FFFFFF',  icon: <DotIcon /> },
+  SENT:      { border: '#34D399', background: '#ECFDF5',  icon: <CheckIcon /> },
+  CANCELLED: { border: '#E2E8F0', background: '#F8FAFC',  icon: <DashIcon /> },
+  FAILED:    { border: '#FCA5A5', background: '#FEF2F2',  icon: <XIcon /> },
+}
+
+const BADGE_STYLE: Record<ReminderStatus, { background: string; color: string }> = {
+  SCHEDULED: { background: '#F3F0FF', color: '#7C3AED' },
+  SENT:      { background: '#ECFDF5', color: '#059669' },
+  CANCELLED: { background: '#F1F5F9', color: '#64748B' },
+  FAILED:    { background: '#FEF2F2', color: '#EF4444' },
 }
 
 const STATUS_LABEL: Record<ReminderStatus, string> = {
-  SCHEDULED: 'Scheduled',
-  SENT: 'Sent',
-  CANCELLED: 'Cancelled',
-  FAILED: 'Failed',
+  SCHEDULED: 'Scheduled', SENT: 'Sent', CANCELLED: 'Cancelled', FAILED: 'Failed',
 }
 
 function fmtDate(iso: string) {
-  return new Intl.DateTimeFormat('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  }).format(new Date(iso))
+  return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(iso))
 }
 
 function fmtDateTime(iso: string) {
-  return new Intl.DateTimeFormat('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-  }).format(new Date(iso))
+  return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }).format(new Date(iso))
 }
 
 export function ReminderTimeline({ reminders, onRetry }: Props) {
   const [retrying, setRetrying] = useState<string | null>(null)
-
-  const steps = [1, 2, 3, 4].map((step) => ({
-    step,
-    reminder: reminders.find((r) => r.step === step) ?? null,
-  }))
+  const steps = [1, 2, 3, 4].map((step) => ({ step, reminder: reminders.find((r) => r.step === step) ?? null }))
 
   return (
-    <div className="space-y-2">
-      {steps.map(({ step, reminder }) => (
-        <div
-          key={step}
-          className="flex items-start gap-3 p-3 border border-gray-100 rounded-lg"
-        >
-          <div
-            className={`mt-1.5 w-2 h-2 rounded-full flex-shrink-0 ${
-              reminder ? STATUS_DOT[reminder.status] : 'bg-gray-200'
-            }`}
-          />
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-sm font-medium text-gray-900">{STEP_LABEL[step]}</span>
-              {reminder && (
-                <span className="text-xs text-gray-400">{STATUS_LABEL[reminder.status]}</span>
+    <div>
+      {steps.map(({ step, reminder }, idx) => {
+        const status = reminder?.status ?? null
+        const cfg = status ? CIRCLE[status] : { border: '#E2E8F0', background: '#F8FAFC', icon: null }
+        const isLast = idx === steps.length - 1
+
+        return (
+          <div key={step} className="flex gap-4">
+            {/* Circle + connecting line */}
+            <div className="flex flex-col items-center">
+              <div
+                className="w-8 h-8 rounded-full border-2 flex items-center justify-center shrink-0"
+                style={{ borderColor: cfg.border, background: cfg.background }}
+              >
+                {cfg.icon ?? (
+                  <span className="text-xs font-semibold" style={{ color: '#94A3B8' }}>{step}</span>
+                )}
+              </div>
+              {!isLast && (
+                <div className="w-px flex-1 my-1" style={{ background: '#F0EEFF', minHeight: 24 }} />
               )}
             </div>
-            <div className="text-xs text-gray-400 mt-0.5">
-              {!reminder && 'Not yet scheduled'}
-              {reminder?.status === 'SENT' && reminder.sentAt && `Sent ${fmtDateTime(reminder.sentAt)}`}
-              {reminder?.status === 'SCHEDULED' && `Scheduled for ${fmtDate(reminder.scheduledAt)}`}
-              {reminder?.status === 'CANCELLED' &&
-                `Cancelled${reminder.cancelledReason ? ` — ${reminder.cancelledReason.replace(/_/g, ' ')}` : ''}`}
-              {reminder?.status === 'FAILED' && (
-                <span className="flex items-center gap-2">
-                  Failed to send
-                  {onRetry && (
+
+            {/* Content */}
+            <div className={`flex-1 flex items-start justify-between gap-2 ${isLast ? '' : 'pb-5'}`}>
+              <div>
+                <p className="text-sm font-semibold" style={{ color: '#1E1B4B' }}>{STEP_LABEL[step]}</p>
+                <p className="text-xs mt-0.5" style={{ color: '#64748B' }}>
+                  {!reminder && 'Not yet scheduled'}
+                  {reminder?.status === 'SENT' && reminder.sentAt && `Sent ${fmtDateTime(reminder.sentAt)}`}
+                  {reminder?.status === 'SCHEDULED' && `Scheduled for ${fmtDate(reminder.scheduledAt)}`}
+                  {reminder?.status === 'CANCELLED' && `Cancelled${reminder.cancelledReason ? ` — ${reminder.cancelledReason.replace(/_/g, ' ')}` : ''}`}
+                  {reminder?.status === 'FAILED' && 'Failed to send'}
+                </p>
+              </div>
+
+              {status && (
+                <div className="flex items-center gap-2 shrink-0">
+                  <span
+                    className="inline-flex items-center px-2.5 py-0.5 text-xs font-semibold rounded-full"
+                    style={BADGE_STYLE[status]}
+                  >
+                    {STATUS_LABEL[status]}
+                  </span>
+                  {status === 'FAILED' && onRetry && reminder && (
                     <button
-                      className="text-[#4F46E5] underline disabled:opacity-50"
+                      className="text-xs font-semibold hover:underline disabled:opacity-50"
+                      style={{ color: '#7C3AED' }}
                       disabled={retrying === reminder.id}
                       onClick={async () => {
                         setRetrying(reminder.id)
-                        try {
-                          await onRetry(reminder.id)
-                        } finally {
-                          setRetrying(null)
-                        }
+                        try { await onRetry(reminder.id) } finally { setRetrying(null) }
                       }}
                     >
                       {retrying === reminder.id ? 'Retrying…' : 'Retry'}
                     </button>
                   )}
-                </span>
+                </div>
               )}
             </div>
           </div>
-        </div>
-      ))}
+        )
+      })}
     </div>
   )
 }

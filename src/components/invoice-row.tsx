@@ -31,21 +31,17 @@ interface Props {
 }
 
 const STATUS_LABEL: Record<InvoiceStatus, string> = {
-  ACTIVE: 'Active',
-  DRAFT: 'Draft',
-  PAID: 'Paid',
-  CANCELLED: 'Cancelled',
-  EXHAUSTED: 'Exhausted',
-  FAILED: 'Failed',
+  ACTIVE: 'Active', DRAFT: 'Draft', PAID: 'Paid',
+  CANCELLED: 'Cancelled', EXHAUSTED: 'Exhausted', FAILED: 'Failed',
 }
 
-const STATUS_CLASS: Record<InvoiceStatus, string> = {
-  ACTIVE: 'bg-emerald-100 text-emerald-700',
-  DRAFT: 'bg-blue-100 text-blue-700',
-  FAILED: 'bg-red-100 text-red-700',
-  PAID: 'bg-gray-100 text-gray-600',
-  EXHAUSTED: 'bg-gray-100 text-gray-600',
-  CANCELLED: 'bg-gray-100 text-gray-600',
+const STATUS_STYLE: Record<InvoiceStatus, { background: string; color: string }> = {
+  ACTIVE:    { background: '#F3F0FF', color: '#7C3AED' },
+  DRAFT:     { background: '#EFF6FF', color: '#2563EB' },
+  PAID:      { background: '#ECFDF5', color: '#059669' },
+  FAILED:    { background: '#FEF2F2', color: '#EF4444' },
+  EXHAUSTED: { background: '#F1F5F9', color: '#64748B' },
+  CANCELLED: { background: '#F1F5F9', color: '#64748B' },
 }
 
 function fmtAmount(amount: string, currency: string) {
@@ -53,11 +49,7 @@ function fmtAmount(amount: string, currency: string) {
 }
 
 function fmtDate(iso: string) {
-  return new Intl.DateTimeFormat('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  }).format(new Date(iso))
+  return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(iso))
 }
 
 export function InvoiceRow({ invoice, onMarkPaid }: Props) {
@@ -76,34 +68,45 @@ export function InvoiceRow({ invoice, onMarkPaid }: Props) {
 
   return (
     <>
-      <tr className="hover:bg-gray-50 transition-colors">
-        <td className="px-4 py-3 font-medium text-gray-900">{invoice.client.name}</td>
-        <td className="px-4 py-3 text-right font-medium text-gray-900 tabular-nums">
+      <tr
+        className="transition-colors"
+        style={{ borderBottom: '1px solid #F0EEFF' }}
+        onMouseEnter={(e) => (e.currentTarget.style.background = '#FAFAFE')}
+        onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+      >
+        <td className="px-5 py-4 font-semibold text-sm" style={{ color: '#1E1B4B' }}>
+          {invoice.client.name}
+        </td>
+        <td className="px-5 py-4 text-right font-bold text-sm tabular-nums" style={{ color: '#1E1B4B' }}>
           {fmtAmount(invoice.amount, invoice.currency)}
         </td>
-        <td className="px-4 py-3 text-gray-500">{fmtDate(invoice.dueDate)}</td>
-        <td className="px-4 py-3">
+        <td className="px-5 py-4 text-sm" style={{ color: '#64748B' }}>
+          {fmtDate(invoice.dueDate)}
+        </td>
+        <td className="px-5 py-4">
           <span
-            className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_CLASS[invoice.status]}`}
+            className="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full"
+            style={STATUS_STYLE[invoice.status]}
           >
             {STATUS_LABEL[invoice.status]}
           </span>
         </td>
-        <td className="px-4 py-3">
-          <div className="flex items-center gap-2 justify-end">
+        <td className="px-5 py-4">
+          <div className="flex items-center gap-3 justify-end">
             {invoice.status === 'ACTIVE' && (
-              <Button
-                size="sm"
-                className="bg-[#10B981] hover:bg-[#059669] text-white border-transparent h-7 text-xs px-2.5"
+              <button
+                className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
+                style={{ background: '#ECFDF5', color: '#059669', border: '1px solid #A7F3D0' }}
                 onClick={() => setOpen(true)}
                 disabled={pending}
               >
                 Mark paid
-              </Button>
+              </button>
             )}
             <Link
               href={`/invoices/${invoice.id}`}
-              className="text-sm text-[#4F46E5] hover:underline"
+              className="text-sm font-semibold transition-colors hover:underline"
+              style={{ color: '#7C3AED' }}
             >
               View
             </Link>
@@ -115,14 +118,12 @@ export function InvoiceRow({ invoice, onMarkPaid }: Props) {
         <DialogContent showCloseButton={false}>
           <DialogHeader>
             <DialogTitle>Mark invoice as paid?</DialogTitle>
-            <DialogDescription>
-              All remaining reminders will be cancelled.
-            </DialogDescription>
+            <DialogDescription>All remaining reminders will be cancelled.</DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
             <Button
-              className="bg-[#10B981] hover:bg-[#059669] text-white border-transparent"
+              className="bg-emerald-500 hover:bg-emerald-600 text-white border-transparent"
               onClick={handleConfirm}
               disabled={pending}
             >

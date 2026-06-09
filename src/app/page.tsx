@@ -1,103 +1,313 @@
-import Image from "next/image";
+import Link from 'next/link'
 
-export default function Home() {
+function LogoIcon({ size = 32 }: { size?: number }) {
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div
+      className="rounded-xl flex items-center justify-center flex-shrink-0"
+      style={{
+        width: size,
+        height: size,
+        background: 'linear-gradient(135deg, #7C3AED, #EC4899)',
+      }}
+    >
+      <svg width={size * 0.44} height={size * 0.44} viewBox="0 0 14 14" fill="white">
+        <path d="M7 0.5L13 5.5L7 13.5L1 5.5L7 0.5Z" />
+      </svg>
+    </div>
+  )
+}
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+export default function HomePage() {
+  return (
+    <div className="min-h-screen" style={{ background: '#F8F7FF', color: '#1E1B4B' }}>
+
+      {/* ── NAVBAR ─────────────────────────────────────────────── */}
+      <nav className="flex items-center justify-between px-8 py-5 max-w-7xl mx-auto">
+        <div className="flex items-center gap-2.5">
+          <LogoIcon size={32} />
+          <span className="text-lg font-bold" style={{ color: '#1E1B4B' }}>InvoiceNudge</span>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+
+        <div className="hidden md:flex items-center gap-8">
+          <a href="#" className="text-sm font-medium" style={{ color: '#1E1B4B' }}>Home</a>
+          <a href="#how-it-works" className="text-sm font-medium" style={{ color: '#64748B' }}>Features</a>
+          <a href="#pricing" className="text-sm font-medium" style={{ color: '#64748B' }}>Pricing</a>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <Link href="/sign-in" className="text-sm font-medium" style={{ color: '#1E1B4B' }}>
+            Log in
+          </Link>
+          <Link
+            href="/sign-up"
+            className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90"
+            style={{ background: 'linear-gradient(135deg, #7C3AED, #6D28D9)' }}
+          >
+            Try it Free
+          </Link>
+        </div>
+      </nav>
+
+      {/* ── HERO ────────────────────────────────────────────────── */}
+      <section className="relative overflow-hidden min-h-[580px] flex items-center">
+        {/* Gradient blob — right side */}
+        <div
+          className="absolute top-0 right-0 pointer-events-none"
+          style={{
+            width: '56%',
+            height: '100%',
+            background: 'linear-gradient(140deg, #7C3AED 0%, #9333EA 35%, #C026D3 65%, #EC4899 100%)',
+            borderBottomLeftRadius: '44% 55%',
+          }}
+        />
+
+        <div className="relative z-10 max-w-7xl mx-auto px-8 py-16 w-full flex flex-col lg:flex-row items-center gap-16">
+          {/* Left — text */}
+          <div className="flex-1 max-w-lg">
+            <h1 className="text-5xl font-extrabold leading-tight mb-5">
+              <span style={{ color: '#7C3AED' }}>Getting Paid</span>
+              <br />
+              <span style={{ color: '#1E1B4B' }}>Doesn&rsquo;t Have To</span>
+              <br />
+              <span style={{ color: '#1E1B4B' }}>Be Awkward</span>
+            </h1>
+            <p className="text-lg leading-relaxed mb-8" style={{ color: '#64748B' }}>
+              InvoiceNudge sends polite payment reminders to your clients
+              automatically — so you never have to write another &ldquo;just
+              following up&rdquo; email.
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-3 mb-8">
+              <Link
+                href="/sign-up"
+                className="inline-flex items-center justify-center px-7 py-3.5 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                style={{ background: 'linear-gradient(135deg, #7C3AED, #6D28D9)' }}
+              >
+                Get Started Free
+              </Link>
+              <Link
+                href="/sign-in"
+                className="inline-flex items-center justify-center px-7 py-3.5 rounded-xl text-sm font-semibold transition-colors hover:bg-white"
+                style={{ border: '2px solid #7C3AED', color: '#7C3AED', background: 'transparent' }}
+              >
+                Log in
+              </Link>
+            </div>
+
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 text-sm" style={{ color: '#64748B' }}>
+              <span>
+                Already using InvoiceNudge?{' '}
+                <Link href="/sign-in" className="font-bold" style={{ color: '#7C3AED' }}>
+                  SIGN IN
+                </Link>
+              </span>
+              <span className="hidden sm:block" style={{ color: '#CBD5E1' }}>·</span>
+              <span>Free to start · No card required</span>
+            </div>
+          </div>
+
+          {/* Right — floating app preview card */}
+          <div className="flex-1 flex justify-center lg:justify-end">
+            <div
+              className="rounded-2xl overflow-hidden shadow-2xl"
+              style={{ width: 420, background: 'white', border: '1px solid #E8E8F0' }}
+            >
+              {/* Mini app: sidebar + content */}
+              <div className="flex" style={{ height: 300 }}>
+                {/* Sidebar */}
+                <div
+                  className="flex flex-col py-4 px-3 gap-1"
+                  style={{ width: 148, background: '#FAFAF8', borderRight: '1px solid #F1F0FF', flexShrink: 0 }}
+                >
+                  <div className="flex items-center gap-2 px-2 py-1 mb-3">
+                    <LogoIcon size={22} />
+                    <span className="text-xs font-bold" style={{ color: '#1E1B4B' }}>InvoiceNudge</span>
+                  </div>
+                  {[
+                    { label: 'Dashboard', active: true },
+                    { label: 'Invoices', active: false },
+                    { label: 'Settings', active: false },
+                  ].map(({ label, active }) => (
+                    <div
+                      key={label}
+                      className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium"
+                      style={active ? { background: '#7C3AED', color: 'white' } : { color: '#64748B' }}
+                    >
+                      {label}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 p-4 overflow-hidden">
+                  <p className="text-sm font-bold mb-3" style={{ color: '#1E1B4B' }}>Hello! Alex 👋</p>
+                  <div className="flex gap-3 mb-4">
+                    <div className="flex-1 rounded-xl p-3" style={{ background: '#F3F0FF' }}>
+                      <p className="text-xs font-medium" style={{ color: '#7C3AED' }}>Invoiced</p>
+                      <p className="text-2xl font-black" style={{ color: '#1E1B4B' }}>5</p>
+                    </div>
+                    <div className="flex-1 rounded-xl p-3" style={{ background: '#FDF2FF' }}>
+                      <p className="text-xs font-medium" style={{ color: '#C026D3' }}>Overdue</p>
+                      <p className="text-2xl font-black" style={{ color: '#1E1B4B' }}>2</p>
+                    </div>
+                  </div>
+                  <p className="text-xs font-semibold mb-2" style={{ color: '#1E1B4B' }}>Recent invoices</p>
+                  {[
+                    { name: 'Acme Corp', amount: '$2,400', status: 'Active', c: { bg: '#F3F0FF', fg: '#7C3AED' } },
+                    { name: 'TechFlow', amount: '$850', status: 'Paid', c: { bg: '#ECFDF5', fg: '#059669' } },
+                    { name: 'Studio XY', amount: '$3,200', status: 'Active', c: { bg: '#F3F0FF', fg: '#7C3AED' } },
+                  ].map(({ name, amount, status, c }) => (
+                    <div
+                      key={name}
+                      className="flex items-center justify-between py-1.5"
+                      style={{ borderBottom: '1px solid #F1F0FF' }}
+                    >
+                      <span className="text-xs font-medium" style={{ color: '#1E1B4B' }}>{name}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-semibold tabular-nums" style={{ color: '#1E1B4B' }}>{amount}</span>
+                        <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: c.bg, color: c.fg }}>
+                          {status}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Bottom detail bar */}
+              <div
+                className="px-5 py-3 flex items-center justify-between"
+                style={{ borderTop: '1px solid #F1F0FF', background: '#FAFAF8' }}
+              >
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: '#64748B' }}>Amount</p>
+                  <p className="text-sm font-bold" style={{ color: '#1E1B4B' }}>$2,400.00</p>
+                </div>
+                <span
+                  className="text-xs font-semibold px-3 py-1 rounded-full"
+                  style={{ background: '#F3F0FF', color: '#7C3AED' }}
+                >
+                  ACTIVE
+                </span>
+                <div className="text-right">
+                  <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: '#64748B' }}>Client</p>
+                  <p className="text-sm font-medium" style={{ color: '#1E1B4B' }}>Acme Corp</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── HOW IT WORKS ─────────────────────────────────────────── */}
+      <section id="how-it-works" className="py-24 px-8" style={{ background: '#FFFFFF' }}>
+        <div className="max-w-5xl mx-auto">
+          <h2 className="text-3xl font-bold text-center mb-3" style={{ color: '#1E1B4B' }}>
+            Three steps. Then forget about it.
+          </h2>
+          <p className="text-center mb-14 text-base" style={{ color: '#64748B' }}>
+            Set it up once, get paid on time — every time.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            {[
+              { n: '01', title: 'Add your invoice', body: 'Paste three fields or upload a PDF — we extract the details automatically.' },
+              { n: '02', title: 'We send the reminders', body: 'Four emails on a smart schedule, toned to match how overdue the invoice is.' },
+              { n: '03', title: 'You get paid', body: 'Client pays, you mark it done, and the sequence stops immediately.' },
+            ].map(({ n, title, body }) => (
+              <div
+                key={n}
+                className="rounded-2xl p-8 relative overflow-hidden"
+                style={{ border: '1px solid #E8E8F0', boxShadow: '0 2px 16px rgba(124,58,237,0.06)' }}
+              >
+                <span
+                  className="absolute -top-3 -left-1 text-8xl font-black select-none pointer-events-none"
+                  style={{ color: '#F3F0FF', lineHeight: 1 }}
+                >
+                  {n}
+                </span>
+                <div className="relative">
+                  <h3 className="text-base font-bold mt-7 mb-2" style={{ color: '#1E1B4B' }}>{title}</h3>
+                  <p className="text-sm leading-relaxed" style={{ color: '#64748B' }}>{body}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── PRICING ──────────────────────────────────────────────── */}
+      <section id="pricing" className="py-24 px-8" style={{ background: '#F8F7FF' }}>
+        <div className="max-w-2xl mx-auto">
+          <h2 className="text-3xl font-bold text-center mb-3" style={{ color: '#1E1B4B' }}>
+            Simple pricing
+          </h2>
+          <p className="text-center mb-14 text-base" style={{ color: '#64748B' }}>
+            Start free. Scale when you&rsquo;re ready.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-6">
+            {/* Free */}
+            <div
+              className="flex-1 rounded-2xl p-8 flex flex-col"
+              style={{ border: '1px solid #E8E8F0', background: '#FFFFFF' }}
+            >
+              <p className="text-sm font-semibold mb-2" style={{ color: '#64748B' }}>Free</p>
+              <p className="text-4xl font-black mb-1" style={{ color: '#1E1B4B' }}>
+                $0<span className="text-lg font-normal" style={{ color: '#64748B' }}>/mo</span>
+              </p>
+              <ul className="mt-6 space-y-3 text-sm flex-1" style={{ color: '#64748B' }}>
+                {['3 active invoices', 'All core features', 'No card required'].map((f) => (
+                  <li key={f} className="flex items-center gap-2">
+                    <span style={{ color: '#7C3AED' }}>✓</span> {f}
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href="/sign-up"
+                className="mt-8 inline-flex items-center justify-center rounded-xl py-3 font-semibold text-sm transition-colors hover:bg-purple-50"
+                style={{ border: '2px solid #7C3AED', color: '#7C3AED' }}
+              >
+                Get Started
+              </Link>
+            </div>
+
+            {/* Pro */}
+            <div
+              className="flex-1 rounded-2xl p-8 flex flex-col text-white"
+              style={{ background: 'linear-gradient(135deg, #7C3AED, #6D28D9)' }}
+            >
+              <p className="text-sm font-semibold mb-2 opacity-80">Pro</p>
+              <p className="text-4xl font-black mb-1">
+                $12<span className="text-lg font-normal opacity-80">/mo</span>
+              </p>
+              <ul className="mt-6 space-y-3 text-sm flex-1 opacity-90">
+                {['Unlimited invoices', 'Reminder history', 'Priority support'].map((f) => (
+                  <li key={f} className="flex items-center gap-2">
+                    <span>✓</span> {f}
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href="/sign-up"
+                className="mt-8 inline-flex items-center justify-center rounded-xl py-3 font-semibold text-sm bg-white transition-opacity hover:opacity-90"
+                style={{ color: '#7C3AED' }}
+              >
+                Upgrade to Pro
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── FOOTER ────────────────────────────────────────────────── */}
+      <footer className="px-8 py-8" style={{ borderTop: '1px solid #E8E8F0', background: '#FFFFFF' }}>
+        <div className="max-w-7xl mx-auto flex items-center justify-between text-sm" style={{ color: '#64748B' }}>
+          <div className="flex items-center gap-2.5">
+            <LogoIcon size={24} />
+            <span className="font-bold" style={{ color: '#1E1B4B' }}>InvoiceNudge</span>
+          </div>
+          <span>Made for freelancers</span>
+        </div>
       </footer>
     </div>
-  );
+  )
 }

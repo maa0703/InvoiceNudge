@@ -1,21 +1,41 @@
 interface Props {
   subject: string
   htmlBody: string
+  from?: string
+  to?: string
 }
 
-export function InvoicePreviewCard({ subject, htmlBody }: Props) {
+export function InvoicePreviewCard({ subject, htmlBody, from, to }: Props) {
   return (
-    <div className="border border-gray-200 rounded-lg overflow-hidden">
-      <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
-        <p className="text-xs text-gray-400 uppercase tracking-wide font-medium">
-          Email preview — Reminder 1
-        </p>
-        <p className="text-sm font-medium text-gray-900 mt-1">{subject}</p>
+    <div className="rounded-xl overflow-hidden" style={{ border: '1px solid #E8E4DC', background: '#FFFFFF' }}>
+      {/* Header rows */}
+      <div>
+        {from && (
+          <div className="flex items-baseline gap-4 px-6 py-3" style={{ borderBottom: '1px solid #E8E4DC' }}>
+            <span className="text-xs uppercase tracking-wide font-medium w-14 shrink-0" style={{ color: '#A8A29E' }}>From</span>
+            <span className="text-sm" style={{ color: '#1C1917' }}>{from}</span>
+          </div>
+        )}
+        {to && (
+          <div className="flex items-baseline gap-4 px-6 py-3" style={{ borderBottom: '1px solid #E8E4DC' }}>
+            <span className="text-xs uppercase tracking-wide font-medium w-14 shrink-0" style={{ color: '#A8A29E' }}>To</span>
+            <span className="text-sm" style={{ color: '#1C1917' }}>{to}</span>
+          </div>
+        )}
+        <div className="flex items-baseline gap-4 px-6 py-3" style={{ borderBottom: '1px solid #E8E4DC' }}>
+          <span className="text-xs uppercase tracking-wide font-medium w-14 shrink-0" style={{ color: '#A8A29E' }}>Subject</span>
+          <span className="text-sm font-medium" style={{ color: '#1C1917' }}>{subject}</span>
+        </div>
       </div>
-      <div
-        className="px-4 py-4 text-sm text-gray-700 [&_p]:mb-3 [&_p:last-child]:mb-0 [&_strong]:font-semibold [&_a]:text-[#4F46E5] [&_a]:underline"
-        dangerouslySetInnerHTML={{ __html: htmlBody }}
-      />
+
+      {/* Body */}
+      <div className="px-6 py-5">
+        <div
+          className="rounded-lg p-4 text-sm leading-relaxed [&_p]:mb-3 [&_p:last-child]:mb-0 [&_strong]:font-semibold [&_a]:text-indigo-600 [&_a]:underline"
+          style={{ background: '#FAFAF8', color: '#1C1917' }}
+          dangerouslySetInnerHTML={{ __html: htmlBody }}
+        />
+      </div>
     </div>
   )
 }
