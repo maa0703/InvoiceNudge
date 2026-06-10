@@ -24,12 +24,29 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'File exceeds 5 MB limit' }, { status: 413 })
   }
 
-  if (file.type !== 'application/pdf') {
+  const looksLikePdf =
+    file.type === 'application/pdf' ||
+    file.type === 'application/x-pdf' ||
+    file.name.toLowerCase().endsWith('.pdf')
+
+  if (!looksLikePdf) {
     return NextResponse.json({ error: 'File must be a PDF' }, { status: 422 })
   }
 
+  let buffer: Buffer
   try {
-    const buffer = Buffer.from(await file.arrayBuffer())
+    buffer = Buffer.from(await file.arrayBuffer())
+  } catch (error) {
+    console.error('[POST /api/v1/invoices/extract] arrayBuffer failed', error)
+    return NextResponse.json({ error: 'INTERNAL_ERROR' }, { status: 500 })
+  }
+
+  // Quick magic-byte check — PDF files start with %PDF
+  if (buffer.length < 4 || buffer.subarray(0, 4).toString('ascii') !== '%PDF') {
+    return NextResponse.json({ error: 'File does not appear to be a valid PDF' }, { status: 422 })
+  }
+
+  try {
     const fields = await extractInvoiceFields(buffer)
     return NextResponse.json(fields)
   } catch (error) {

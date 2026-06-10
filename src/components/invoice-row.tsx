@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -28,6 +28,8 @@ export interface InvoiceRowData {
 interface Props {
   invoice: InvoiceRowData
   onMarkPaid: (id: string) => Promise<void>
+  onCancel?: (id: string) => Promise<void>
+  onDelete?: (id: string) => Promise<void>
 }
 
 const STATUS_LABEL: Record<InvoiceStatus, string> = {
@@ -52,25 +54,52 @@ function fmtDate(iso: string) {
   return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(iso))
 }
 
-export function InvoiceRow({ invoice, onMarkPaid }: Props) {
-  const [pending, setPending] = useState(false)
-  const [open, setOpen] = useState(false)
+export function InvoiceRow({ invoice, onMarkPaid, onCancel, onDelete }: Props) {
+  const router = useRouter()
+  const [markPaidPending, setMarkPaidPending] = useState(false)
+  const [markPaidOpen, setMarkPaidOpen] = useState(false)
+  const [cancelPending, setCancelPending] = useState(false)
+  const [cancelOpen, setCancelOpen] = useState(false)
+  const [deletePending, setDeletePending] = useState(false)
+  const [deleteOpen, setDeleteOpen] = useState(false)
 
-  async function handleConfirm() {
-    setPending(true)
+  async function handleConfirmPaid() {
+    setMarkPaidPending(true)
     try {
       await onMarkPaid(invoice.id)
-      setOpen(false)
+      setMarkPaidOpen(false)
     } finally {
-      setPending(false)
+      setMarkPaidPending(false)
+    }
+  }
+
+  async function handleConfirmCancel() {
+    if (!onCancel) return
+    setCancelPending(true)
+    try {
+      await onCancel(invoice.id)
+      setCancelOpen(false)
+    } finally {
+      setCancelPending(false)
+    }
+  }
+
+  async function handleConfirmDelete() {
+    if (!onDelete) return
+    setDeletePending(true)
+    try {
+      await onDelete(invoice.id)
+      setDeleteOpen(false)
+    } finally {
+      setDeletePending(false)
     }
   }
 
   return (
     <>
       <tr
-        className="transition-colors"
-        style={{ borderBottom: '1px solid #F0EEFF' }}
+        onClick={() => router.push(`/invoices/${invoice.id}`)}
+        style={{ borderBottom: '1px solid #F0EEFF', cursor: 'pointer' }}
         onMouseEnter={(e) => (e.currentTarget.style.background = '#FAFAFE')}
         onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
       >
@@ -92,29 +121,45 @@ export function InvoiceRow({ invoice, onMarkPaid }: Props) {
           </span>
         </td>
         <td className="px-5 py-4">
-          <div className="flex items-center gap-3 justify-end">
+          <div
+            className="flex items-center gap-2 justify-end"
+            onClick={(e) => e.stopPropagation()}
+          >
             {invoice.status === 'ACTIVE' && (
               <button
                 className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
                 style={{ background: '#ECFDF5', color: '#059669', border: '1px solid #A7F3D0' }}
-                onClick={() => setOpen(true)}
-                disabled={pending}
+                onClick={() => setMarkPaidOpen(true)}
+                disabled={markPaidPending}
               >
                 Mark paid
               </button>
             )}
-            <Link
-              href={`/invoices/${invoice.id}`}
-              className="text-sm font-semibold transition-colors hover:underline"
-              style={{ color: '#7C3AED' }}
-            >
-              View
-            </Link>
+            {onCancel && invoice.status === 'ACTIVE' && (
+              <button
+                className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
+                style={{ background: '#FFFBEB', color: '#D97706', border: '1px solid #FDE68A' }}
+                onClick={() => setCancelOpen(true)}
+                disabled={cancelPending}
+              >
+                Cancel
+              </button>
+            )}
+            {onDelete && (
+              <button
+                className="text-xs font-semibold px-3 py-1.5 rounded-lg"
+                style={{ background: '#FEF2F2', color: '#EF4444', border: '1px solid #FECACA' }}
+                onClick={() => setDeleteOpen(true)}
+              >
+                Delete
+              </button>
+            )}
           </div>
         </td>
       </tr>
 
-      <Dialog open={open} onOpenChange={setOpen}>
+      {/* Mark Paid dialog */}
+      <Dialog open={markPaidOpen} onOpenChange={setMarkPaidOpen}>
         <DialogContent showCloseButton={false}>
           <DialogHeader>
             <DialogTitle>Mark invoice as paid?</DialogTitle>
@@ -124,10 +169,50 @@ export function InvoiceRow({ invoice, onMarkPaid }: Props) {
             <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
             <Button
               className="bg-emerald-500 hover:bg-emerald-600 text-white border-transparent"
-              onClick={handleConfirm}
-              disabled={pending}
+              onClick={handleConfirmPaid}
+              disabled={markPaidPending}
             >
-              {pending ? '…' : 'Confirm'}
+              {markPaidPending ? '…' : 'Confirm'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Cancel dialog */}
+      <Dialog open={cancelOpen} onOpenChange={setCancelOpen}>
+        <DialogContent showCloseButton={false}>
+          <DialogHeader>
+            <DialogTitle>Cancel this invoice?</DialogTitle>
+            <DialogDescription>All scheduled reminders will be stopped. This cannot be undone.</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose render={<Button variant="outline" />}>Back</DialogClose>
+            <Button
+              className="bg-amber-500 hover:bg-amber-600 text-white border-transparent"
+              onClick={handleConfirmCancel}
+              disabled={cancelPending}
+            >
+              {cancelPending ? '…' : 'Cancel invoice'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete dialog */}
+      <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <DialogContent showCloseButton={false}>
+          <DialogHeader>
+            <DialogTitle>Delete this invoice?</DialogTitle>
+            <DialogDescription>This will permanently remove the invoice and cancel any scheduled reminders.</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
+            <Button
+              className="bg-red-500 hover:bg-red-600 text-white border-transparent"
+              onClick={handleConfirmDelete}
+              disabled={deletePending}
+            >
+              {deletePending ? '…' : 'Delete'}
             </Button>
           </DialogFooter>
         </DialogContent>

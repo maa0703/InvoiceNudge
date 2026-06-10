@@ -120,3 +120,10 @@ export async function cancelInvoice(userId: string, invoiceId: string) {
   await invoiceRepo.updateStatus(userId, invoiceId, InvoiceStatus.CANCELLED)
   return { cancelledCount }
 }
+
+export async function deleteInvoice(userId: string, invoiceId: string) {
+  const invoice = await invoiceRepo.findById(userId, invoiceId)
+  if (!invoice) throw new ServiceError('NOT_FOUND', 'Invoice not found.')
+  await reminderRepo.cancelByInvoice(invoiceId, 'manual')
+  await invoiceRepo.softDelete(userId, invoiceId)
+}

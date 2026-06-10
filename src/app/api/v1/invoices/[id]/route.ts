@@ -4,6 +4,36 @@ import { getCurrentUser } from '@/lib/auth'
 import * as invoiceService from '@/server/invoice.service'
 import { ServiceError } from '@/server/invoice.service'
 
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const { userId } = await auth()
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  let user: Awaited<ReturnType<typeof getCurrentUser>>
+  try {
+    user = await getCurrentUser()
+  } catch (error) {
+    console.error('[DELETE /api/v1/invoices/[id]] getCurrentUser failed', error)
+    return NextResponse.json({ error: 'INTERNAL_ERROR' }, { status: 500 })
+  }
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const { id } = await params
+
+  try {
+    await invoiceService.deleteInvoice(user.id, id)
+    return NextResponse.json({ ok: true })
+  } catch (error) {
+    if (error instanceof ServiceError && error.code === 'NOT_FOUND') {
+      return NextResponse.json({ error: error.message }, { status: 404 })
+    }
+    console.error('[DELETE /api/v1/invoices/[id]]', error)
+    return NextResponse.json({ error: 'INTERNAL_ERROR' }, { status: 500 })
+  }
+}
+
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> },

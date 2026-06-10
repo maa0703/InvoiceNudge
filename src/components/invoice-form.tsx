@@ -76,7 +76,8 @@ export function InvoiceForm({ isBlocked = false }: Props) {
   }
 
   async function handleFile(file: File) {
-    if (file.type !== 'application/pdf') { setExtractError('Please upload a PDF file.'); return }
+    const looksLikePdf = file.type === 'application/pdf' || file.type === 'application/x-pdf' || file.name.toLowerCase().endsWith('.pdf')
+    if (!looksLikePdf) { setExtractError('Please upload a PDF file.'); return }
     if (file.size > 5 * 1024 * 1024) { setExtractError('File must be under 5 MB.'); return }
     setExtracting(true); setExtractError(null); setAutoFilled(false)
     const form = new FormData()
@@ -87,6 +88,7 @@ export function InvoiceForm({ isBlocked = false }: Props) {
       if (!res.ok) { setExtractError(data.error ?? "Couldn't read this PDF — please fill in manually."); return }
       setFields((prev) => ({
         ...prev,
+        ...(data.clientName  ? { clientName:  data.clientName  } : {}),
         ...(data.clientEmail ? { clientEmail: data.clientEmail } : {}),
         ...(data.invoiceRef  ? { invoiceRef:  data.invoiceRef  } : {}),
         ...(data.amount      ? { amount:      String(data.amount) } : {}),
@@ -200,42 +202,42 @@ export function InvoiceForm({ isBlocked = false }: Props) {
       <div className="space-y-5">
         <Field id="clientName" label="Client name" error={fieldErrors.clientName}>
           <input id="clientName" value={fields.clientName} onChange={(e) => setField('clientName', e.target.value)}
-            placeholder="Acme Corp" style={inputStyle}
+            placeholder="Acme Corp" style={inputStyle} suppressHydrationWarning
             onFocus={(e) => { e.target.style.borderColor = '#7C3AED'; e.target.style.boxShadow = '0 0 0 3px rgba(124,58,237,0.12)' }}
             onBlur={(e) => { e.target.style.borderColor = '#E8E8F0'; e.target.style.boxShadow = 'none' }} />
         </Field>
 
         <Field id="clientEmail" label="Client email" error={fieldErrors.clientEmail}>
           <input id="clientEmail" type="email" value={fields.clientEmail} onChange={(e) => setField('clientEmail', e.target.value)}
-            placeholder="billing@acme.com" style={inputStyle}
+            placeholder="billing@acme.com" style={inputStyle} suppressHydrationWarning
             onFocus={(e) => { e.target.style.borderColor = '#7C3AED'; e.target.style.boxShadow = '0 0 0 3px rgba(124,58,237,0.12)' }}
             onBlur={(e) => { e.target.style.borderColor = '#E8E8F0'; e.target.style.boxShadow = 'none' }} />
         </Field>
 
         <Field id="invoiceRef" label="Invoice ref" optional error={fieldErrors.invoiceRef}>
           <input id="invoiceRef" value={fields.invoiceRef} onChange={(e) => setField('invoiceRef', e.target.value)}
-            placeholder="INV-001" style={inputStyle}
+            placeholder="INV-001" style={inputStyle} suppressHydrationWarning
             onFocus={(e) => { e.target.style.borderColor = '#7C3AED'; e.target.style.boxShadow = '0 0 0 3px rgba(124,58,237,0.12)' }}
             onBlur={(e) => { e.target.style.borderColor = '#E8E8F0'; e.target.style.boxShadow = 'none' }} />
         </Field>
 
         <Field id="dueDate" label="Due date" error={fieldErrors.dueDate}>
           <input id="dueDate" type="date" value={fields.dueDate} onChange={(e) => setField('dueDate', e.target.value)}
-            style={inputStyle}
+            style={inputStyle} suppressHydrationWarning
             onFocus={(e) => { e.target.style.borderColor = '#7C3AED'; e.target.style.boxShadow = '0 0 0 3px rgba(124,58,237,0.12)' }}
             onBlur={(e) => { e.target.style.borderColor = '#E8E8F0'; e.target.style.boxShadow = 'none' }} />
         </Field>
 
         <Field id="amount" label="Amount" error={fieldErrors.amount}>
           <input id="amount" type="number" min="0.01" step="0.01" value={fields.amount}
-            onChange={(e) => setField('amount', e.target.value)} placeholder="1200.00" style={inputStyle}
+            onChange={(e) => setField('amount', e.target.value)} placeholder="1200.00" style={inputStyle} suppressHydrationWarning
             onFocus={(e) => { e.target.style.borderColor = '#7C3AED'; e.target.style.boxShadow = '0 0 0 3px rgba(124,58,237,0.12)' }}
             onBlur={(e) => { e.target.style.borderColor = '#E8E8F0'; e.target.style.boxShadow = 'none' }} />
         </Field>
 
         <Field id="currency" label="Currency">
           <select id="currency" value={fields.currency} onChange={(e) => setField('currency', e.target.value as 'USD' | 'EUR' | 'GBP')}
-            style={{ ...inputStyle, cursor: 'pointer' }}
+            style={{ ...inputStyle, cursor: 'pointer' }} suppressHydrationWarning
             onFocus={(e) => { e.target.style.borderColor = '#7C3AED'; e.target.style.boxShadow = '0 0 0 3px rgba(124,58,237,0.12)' }}
             onBlur={(e) => { e.target.style.borderColor = '#E8E8F0'; e.target.style.boxShadow = 'none' }}>
             <option value="USD">USD — US Dollar</option>

@@ -31,6 +31,20 @@ export function DashboardContent({ plan: _propPlan }: { plan?: string }) {
     }
   }
 
+  async function handleDelete(id: string) {
+    try {
+      const res = await fetch(`/api/v1/invoices/${id}`, { method: 'DELETE' })
+      if (!res.ok) {
+        toast.error('Could not delete invoice.')
+        return
+      }
+      await mutate()
+      toast.success('Invoice deleted.')
+    } catch {
+      toast.error('Something went wrong.')
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -87,7 +101,7 @@ export function DashboardContent({ plan: _propPlan }: { plan?: string }) {
             </thead>
             <tbody>
               {invoices.map((invoice) => (
-                <InvoiceRow key={invoice.id} invoice={invoice} onMarkPaid={handleMarkPaid} />
+                <InvoiceRow key={invoice.id} invoice={invoice} onMarkPaid={handleMarkPaid} onDelete={handleDelete} />
               ))}
             </tbody>
           </table>

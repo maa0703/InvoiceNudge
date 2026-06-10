@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { auth } from '@clerk/nextjs/server'
 
 function LogoIcon({ size = 32 }: { size?: number }) {
   return (
@@ -17,7 +18,8 @@ function LogoIcon({ size = 32 }: { size?: number }) {
   )
 }
 
-export default function HomePage() {
+export default async function HomePage() {
+  const { userId } = await auth()
   return (
     <div className="min-h-screen" style={{ background: '#F8F7FF', color: '#1E1B4B' }}>
 
@@ -30,21 +32,33 @@ export default function HomePage() {
 
         <div className="hidden md:flex items-center gap-8">
           <a href="#" className="text-sm font-medium" style={{ color: '#1E1B4B' }}>Home</a>
-          <a href="#how-it-works" className="text-sm font-medium" style={{ color: '#64748B' }}>Features</a>
+          <a href="#how-it-works" className="text-sm font-medium" style={{ color: '#64748B' }}>How it works</a>
           <a href="#pricing" className="text-sm font-medium" style={{ color: '#64748B' }}>Pricing</a>
         </div>
 
         <div className="flex items-center gap-4">
-          <Link href="/sign-in" className="text-sm font-medium" style={{ color: '#1E1B4B' }}>
-            Log in
-          </Link>
-          <Link
-            href="/sign-up"
-            className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90"
-            style={{ background: 'linear-gradient(135deg, #7C3AED, #6D28D9)' }}
-          >
-            Try it Free
-          </Link>
+          {userId ? (
+            <Link
+              href="/dashboard"
+              className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90"
+              style={{ background: 'linear-gradient(135deg, #7C3AED, #6D28D9)' }}
+            >
+              Go to dashboard
+            </Link>
+          ) : (
+            <>
+              <Link href="/sign-in" className="text-sm font-medium" style={{ color: '#1E1B4B' }}>
+                Log in
+              </Link>
+              <Link
+                href="/sign-up"
+                className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                style={{ background: 'linear-gradient(135deg, #7C3AED, #6D28D9)' }}
+              >
+                Try it Free
+              </Link>
+            </>
+          )}
         </div>
       </nav>
 
@@ -64,46 +78,64 @@ export default function HomePage() {
         <div className="relative z-10 max-w-7xl mx-auto px-8 py-16 w-full flex flex-col lg:flex-row items-center gap-16">
           {/* Left — text */}
           <div className="flex-1 max-w-lg">
-            <h1 className="text-5xl font-extrabold leading-tight mb-5">
-              <span style={{ color: '#7C3AED' }}>Getting Paid</span>
+            <div
+              className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium mb-5"
+              style={{ background: '#F3F0FF', color: '#7C3AED', border: '1px solid #DDD6FE' }}
+            >
+              Built for freelancers · Free to start
+            </div>
+            <h1 className="text-5xl font-extrabold leading-tight mb-5" style={{ color: '#1E1B4B' }}>
+              Get paid.{' '}
+              <span style={{ color: '#7C3AED' }}>Skip the</span>
               <br />
-              <span style={{ color: '#1E1B4B' }}>Doesn&rsquo;t Have To</span>
-              <br />
-              <span style={{ color: '#1E1B4B' }}>Be Awkward</span>
+              <span style={{ color: '#7C3AED' }}>awkward part.</span>
             </h1>
             <p className="text-lg leading-relaxed mb-8" style={{ color: '#64748B' }}>
-              InvoiceNudge sends polite payment reminders to your clients
-              automatically — so you never have to write another &ldquo;just
-              following up&rdquo; email.
+              InvoiceNudge automatically follows up on your unpaid invoices — so you never have to
+              write another &ldquo;just following up…&rdquo; email again.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3 mb-8">
-              <Link
-                href="/sign-up"
-                className="inline-flex items-center justify-center px-7 py-3.5 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90"
-                style={{ background: 'linear-gradient(135deg, #7C3AED, #6D28D9)' }}
-              >
-                Get Started Free
-              </Link>
-              <Link
-                href="/sign-in"
-                className="inline-flex items-center justify-center px-7 py-3.5 rounded-xl text-sm font-semibold transition-colors hover:bg-white"
-                style={{ border: '2px solid #7C3AED', color: '#7C3AED', background: 'transparent' }}
-              >
-                Log in
-              </Link>
+              {userId ? (
+                <Link
+                  href="/dashboard"
+                  className="inline-flex items-center justify-center px-7 py-3.5 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                  style={{ background: '#4F46E5' }}
+                >
+                  Go to dashboard
+                </Link>
+              ) : (
+                <>
+                  <Link
+                    href="/sign-up"
+                    className="inline-flex items-center justify-center px-7 py-3.5 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                    style={{ background: 'linear-gradient(135deg, #7C3AED, #6D28D9)' }}
+                  >
+                    Get Started Free
+                  </Link>
+                  <Link
+                    href="/sign-in"
+                    className="inline-flex items-center justify-center px-7 py-3.5 rounded-xl text-sm font-semibold transition-colors hover:bg-white"
+                    style={{ border: '2px solid #7C3AED', color: '#7C3AED', background: 'transparent' }}
+                  >
+                    Log in
+                  </Link>
+                </>
+              )}
             </div>
 
-            <div className="flex flex-col sm:flex-row sm:items-center gap-3 text-sm" style={{ color: '#64748B' }}>
-              <span>
-                Already using InvoiceNudge?{' '}
-                <Link href="/sign-in" className="font-bold" style={{ color: '#7C3AED' }}>
-                  SIGN IN
-                </Link>
-              </span>
-              <span className="hidden sm:block" style={{ color: '#CBD5E1' }}>·</span>
-              <span>Free to start · No card required</span>
-            </div>
+            {!userId && (
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 text-sm" style={{ color: '#64748B' }}>
+                <span>
+                  Already using InvoiceNudge?{' '}
+                  <Link href="/sign-in" className="font-bold" style={{ color: '#7C3AED' }}>
+                    SIGN IN
+                  </Link>
+                </span>
+                <span className="hidden sm:block" style={{ color: '#CBD5E1' }}>·</span>
+                <span>Free to start · No card required</span>
+              </div>
+            )}
           </div>
 
           {/* Right — floating app preview card */}
@@ -112,7 +144,6 @@ export default function HomePage() {
               className="rounded-2xl overflow-hidden shadow-2xl"
               style={{ width: 420, background: 'white', border: '1px solid #E8E8F0' }}
             >
-              {/* Mini app: sidebar + content */}
               <div className="flex" style={{ height: 300 }}>
                 {/* Sidebar */}
                 <div
@@ -199,50 +230,220 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ── WHY IT EXISTS ────────────────────────────────────────── */}
+      <section className="py-24 px-8" style={{ background: '#FFFFFF' }}>
+        <div className="max-w-xl mx-auto text-center">
+          <h2 className="text-3xl font-bold mb-5" style={{ color: '#1E1B4B' }}>
+            Why InvoiceNudge exists
+          </h2>
+          <p className="text-base leading-relaxed" style={{ color: '#64748B' }}>
+            71% of freelancers experience late payment. The problem isn&rsquo;t that clients are bad —
+            it&rsquo;s that chasing them feels uncomfortable. So we delay. We let invoices sit. We lose
+            money quietly. InvoiceNudge removes the discomfort entirely. You add the invoice. We send
+            the reminders. You stay professional without lifting a finger.
+          </p>
+        </div>
+      </section>
+
       {/* ── HOW IT WORKS ─────────────────────────────────────────── */}
-      <section id="how-it-works" className="py-24 px-8" style={{ background: '#FFFFFF' }}>
+      <section id="how-it-works" className="py-24 px-8" style={{ background: '#F8F7FF' }}>
         <div className="max-w-5xl mx-auto">
           <h2 className="text-3xl font-bold text-center mb-3" style={{ color: '#1E1B4B' }}>
-            Three steps. Then forget about it.
+            Here&rsquo;s exactly what happens
           </h2>
           <p className="text-center mb-14 text-base" style={{ color: '#64748B' }}>
-            Set it up once, get paid on time — every time.
+            No surprises. You&rsquo;re always in control.
           </p>
+
+          <div className="relative max-w-2xl mx-auto">
+            {/* Vertical connecting line */}
+            <div
+              className="absolute top-10 bottom-10"
+              style={{ left: '1.875rem', width: '2px', background: '#E8E8F0' }}
+            />
+
+            <div className="space-y-8">
+              {[
+                {
+                  n: '01',
+                  title: 'Add your invoice',
+                  body: "Upload a PDF or type 3 fields: client name, amount, and due date. That's it. No new invoicing tool required — works with whatever you already use.",
+                },
+                {
+                  n: '02',
+                  title: "We wait until it's overdue",
+                  body: "We don't send reminders before the due date — that's presumptuous. We start only after the due date passes, when following up is legitimate and expected.",
+                },
+                {
+                  n: '03',
+                  title: 'We check in with you first',
+                  body: "3 hours before every reminder goes out, we email YOU first. 'About to send to Acme Studio — still on?' One click to cancel if they've already paid. You're always in control.",
+                },
+                {
+                  n: '04',
+                  title: 'Your client gets a professional email',
+                  body: '4 reminders on a smart schedule: Day +1, +5, +10, +20 after the due date. Tone escalates gradually — warm first, firm last. Signed with your name. Feels like you wrote it.',
+                },
+              ].map(({ n, title, body }) => (
+                <div key={n} className="relative flex gap-6 pl-16">
+                  {/* Step circle */}
+                  <div
+                    className="absolute left-0 w-15 flex items-center justify-center"
+                    style={{ zIndex: 1 }}
+                  >
+                    <span
+                      className="text-4xl font-black select-none"
+                      style={{ color: '#E8E8F0', lineHeight: 1 }}
+                    >
+                      {n}
+                    </span>
+                  </div>
+                  <div
+                    className="flex-1 rounded-2xl p-6 relative overflow-hidden"
+                    style={{ border: '1px solid #E8E8F0', background: '#FFFFFF', boxShadow: '0 2px 16px rgba(124,58,237,0.06)' }}
+                  >
+                    <h3 className="text-base font-bold mb-2" style={{ color: '#1E1B4B' }}>{title}</h3>
+                    <p className="text-sm leading-relaxed" style={{ color: '#64748B' }}>{body}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── OBJECTION BUSTERS ────────────────────────────────────── */}
+      <section className="py-24 px-8" style={{ background: '#FFFFFF' }}>
+        <div className="max-w-5xl mx-auto">
+          <h2 className="text-3xl font-bold text-center mb-14" style={{ color: '#1E1B4B' }}>
+            Your concerns, answered
+          </h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             {[
-              { n: '01', title: 'Add your invoice', body: 'Paste three fields or upload a PDF — we extract the details automatically.' },
-              { n: '02', title: 'We send the reminders', body: 'Four emails on a smart schedule, toned to match how overdue the invoice is.' },
-              { n: '03', title: 'You get paid', body: 'Client pays, you mark it done, and the sequence stops immediately.' },
-            ].map(({ n, title, body }) => (
+              {
+                q: 'Will it make me look pushy?',
+                a: 'No. The first reminder is warm and friendly. Tone only escalates if the client keeps ignoring it. Most clients pay after reminder 1.',
+              },
+              {
+                q: 'What if they already paid?',
+                a: "That's exactly what the Check-in is for. We warn you 3 hours before every send. Cancel with one click — no login required, works from your phone.",
+              },
+              {
+                q: 'Do I need to change how I invoice?',
+                a: "Not at all. InvoiceNudge doesn't replace your invoicing tool. Upload any PDF or just type the 3 fields manually. It works with FreshBooks, Wave, a Word doc — anything.",
+              },
+            ].map(({ q, a }) => (
               <div
-                key={n}
-                className="rounded-2xl p-8 relative overflow-hidden"
+                key={q}
+                className="rounded-2xl p-8"
                 style={{ border: '1px solid #E8E8F0', boxShadow: '0 2px 16px rgba(124,58,237,0.06)' }}
               >
-                <span
-                  className="absolute -top-3 -left-1 text-8xl font-black select-none pointer-events-none"
-                  style={{ color: '#F3F0FF', lineHeight: 1 }}
-                >
-                  {n}
-                </span>
-                <div className="relative">
-                  <h3 className="text-base font-bold mt-7 mb-2" style={{ color: '#1E1B4B' }}>{title}</h3>
-                  <p className="text-sm leading-relaxed" style={{ color: '#64748B' }}>{body}</p>
-                </div>
+                <h3 className="text-base font-bold mb-3" style={{ color: '#1E1B4B' }}>{q}</h3>
+                <p className="text-sm leading-relaxed" style={{ color: '#64748B' }}>{a}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
+      {/* ── REMINDER SCHEDULE ────────────────────────────────────── */}
+      <section className="py-24 px-8" style={{ background: '#F8F7FF' }}>
+        <div className="max-w-5xl mx-auto">
+          <h2 className="text-3xl font-bold text-center mb-3" style={{ color: '#1E1B4B' }}>
+            The reminder schedule
+          </h2>
+          <p className="text-center mb-14 text-base" style={{ color: '#64748B' }}>
+            Professional, escalating, automatic.
+          </p>
+
+          <div className="relative max-w-lg mx-auto">
+            {/* Vertical line */}
+            <div
+              className="absolute top-4 bottom-4"
+              style={{ left: '0.9375rem', width: '2px', background: '#E8E8F0' }}
+            />
+
+            <div className="space-y-6">
+              {/* Due date marker */}
+              <div className="flex items-center gap-5">
+                <div
+                  className="w-8 h-8 rounded-full flex-shrink-0"
+                  style={{ background: '#E8E8F0', border: '2px solid #CBD5E1', zIndex: 1 }}
+                />
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: '#94A3B8' }}>Due date</p>
+                  <p className="text-sm font-medium" style={{ color: '#1E1B4B' }}>Invoice due</p>
+                </div>
+              </div>
+
+              {[
+                {
+                  day: 'Day +1',
+                  label: 'Reminder 1',
+                  desc: 'Warm and friendly check-in',
+                  tone: 'Warm',
+                  badge: { bg: '#D1FAE5', fg: '#065F46' },
+                },
+                {
+                  day: 'Day +5',
+                  label: 'Reminder 2',
+                  desc: 'Neutral follow-up with amount',
+                  tone: 'Neutral',
+                  badge: { bg: '#DBEAFE', fg: '#1E40AF' },
+                },
+                {
+                  day: 'Day +10',
+                  label: 'Reminder 3',
+                  desc: 'Firm but professional',
+                  tone: 'Firm',
+                  badge: { bg: '#FEF3C7', fg: '#92400E' },
+                },
+                {
+                  day: 'Day +20',
+                  label: 'Reminder 4',
+                  desc: 'Final notice',
+                  tone: 'Final',
+                  badge: { bg: '#FEE2E2', fg: '#991B1B' },
+                },
+              ].map(({ day, label, desc, tone, badge }) => (
+                <div key={day} className="flex items-center gap-5">
+                  <div
+                    className="w-8 h-8 rounded-full flex-shrink-0"
+                    style={{ background: '#7C3AED', border: '3px solid #F3F0FF', zIndex: 1 }}
+                  />
+                  <div
+                    className="flex-1 flex items-center justify-between gap-4 rounded-2xl px-5 py-4"
+                    style={{ border: '1px solid #E8E8F0', background: '#FFFFFF', boxShadow: '0 2px 16px rgba(124,58,237,0.06)' }}
+                  >
+                    <div>
+                      <p className="text-xs font-semibold font-mono" style={{ color: '#7C3AED' }}>{day}</p>
+                      <p className="text-sm font-medium" style={{ color: '#1E1B4B' }}>
+                        {label}:{' '}
+                        <span style={{ color: '#64748B', fontWeight: 400 }}>{desc}</span>
+                      </p>
+                    </div>
+                    <span
+                      className="text-xs font-semibold px-2.5 py-1 rounded-full flex-shrink-0"
+                      style={{ background: badge.bg, color: badge.fg }}
+                    >
+                      {tone}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ── PRICING ──────────────────────────────────────────────── */}
-      <section id="pricing" className="py-24 px-8" style={{ background: '#F8F7FF' }}>
+      <section id="pricing" className="py-24 px-8" style={{ background: '#FFFFFF' }}>
         <div className="max-w-2xl mx-auto">
           <h2 className="text-3xl font-bold text-center mb-3" style={{ color: '#1E1B4B' }}>
             Simple pricing
           </h2>
           <p className="text-center mb-14 text-base" style={{ color: '#64748B' }}>
-            Start free. Scale when you&rsquo;re ready.
+            Start free. Upgrade when you&rsquo;re ready.
           </p>
           <div className="flex flex-col sm:flex-row gap-6">
             {/* Free */}
@@ -255,9 +456,15 @@ export default function HomePage() {
                 $0<span className="text-lg font-normal" style={{ color: '#64748B' }}>/mo</span>
               </p>
               <ul className="mt-6 space-y-3 text-sm flex-1" style={{ color: '#64748B' }}>
-                {['3 active invoices', 'All core features', 'No card required'].map((f) => (
-                  <li key={f} className="flex items-center gap-2">
-                    <span style={{ color: '#7C3AED' }}>✓</span> {f}
+                {[
+                  'Up to 3 active invoices',
+                  'Full reminder sequence (all 4 emails)',
+                  'Check-in before every send',
+                  'PDF upload',
+                  'No credit card required',
+                ].map((f) => (
+                  <li key={f} className="flex items-start gap-2">
+                    <span style={{ color: '#7C3AED', flexShrink: 0, marginTop: 1 }}>✓</span> {f}
                   </li>
                 ))}
               </ul>
@@ -266,23 +473,35 @@ export default function HomePage() {
                 className="mt-8 inline-flex items-center justify-center rounded-xl py-3 font-semibold text-sm transition-colors hover:bg-purple-50"
                 style={{ border: '2px solid #7C3AED', color: '#7C3AED' }}
               >
-                Get Started
+                Start free
               </Link>
             </div>
 
             {/* Pro */}
             <div
-              className="flex-1 rounded-2xl p-8 flex flex-col text-white"
+              className="flex-1 rounded-2xl p-8 flex flex-col text-white relative overflow-hidden"
               style={{ background: 'linear-gradient(135deg, #7C3AED, #6D28D9)' }}
             >
+              {/* Most popular badge */}
+              <div
+                className="absolute top-4 right-4 text-xs font-semibold px-2.5 py-1 rounded-full"
+                style={{ background: 'rgba(255,255,255,0.2)', color: 'white' }}
+              >
+                Most popular
+              </div>
               <p className="text-sm font-semibold mb-2 opacity-80">Pro</p>
               <p className="text-4xl font-black mb-1">
                 $12<span className="text-lg font-normal opacity-80">/mo</span>
               </p>
               <ul className="mt-6 space-y-3 text-sm flex-1 opacity-90">
-                {['Unlimited invoices', 'Reminder history', 'Priority support'].map((f) => (
-                  <li key={f} className="flex items-center gap-2">
-                    <span>✓</span> {f}
+                {[
+                  'Everything in Free',
+                  'Unlimited active invoices',
+                  'Reminder history',
+                  'Priority support',
+                ].map((f) => (
+                  <li key={f} className="flex items-start gap-2">
+                    <span style={{ flexShrink: 0, marginTop: 1 }}>✓</span> {f}
                   </li>
                 ))}
               </ul>
@@ -291,7 +510,7 @@ export default function HomePage() {
                 className="mt-8 inline-flex items-center justify-center rounded-xl py-3 font-semibold text-sm bg-white transition-opacity hover:opacity-90"
                 style={{ color: '#7C3AED' }}
               >
-                Upgrade to Pro
+                Get Pro
               </Link>
             </div>
           </div>
@@ -300,11 +519,12 @@ export default function HomePage() {
 
       {/* ── FOOTER ────────────────────────────────────────────────── */}
       <footer className="px-8 py-8" style={{ borderTop: '1px solid #E8E8F0', background: '#FFFFFF' }}>
-        <div className="max-w-7xl mx-auto flex items-center justify-between text-sm" style={{ color: '#64748B' }}>
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-sm" style={{ color: '#64748B' }}>
           <div className="flex items-center gap-2.5">
             <LogoIcon size={24} />
-            <span className="font-bold" style={{ color: '#1E1B4B' }}>InvoiceNudge</span>
+            <span className="font-semibold" style={{ color: '#7C3AED' }}>InvoiceNudge</span>
           </div>
+          <span>Get paid. Skip the awkward part.</span>
           <span>Made for freelancers</span>
         </div>
       </footer>

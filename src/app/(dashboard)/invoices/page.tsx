@@ -1,80 +1,139 @@
+'use client'
+
+import { useState } from 'react'
 import Link from 'next/link'
-import { getCurrentUser } from '@/lib/auth'
-import { getInvoices } from '@/server/invoice.service'
-import type { InvoiceStatus } from '@prisma/client'
+import useSWR from 'swr'
+import { toast } from 'sonner'
+import { InvoiceRow, type InvoiceRowData } from '@/components/invoice-row'
 
-const STATUS_LABEL: Record<InvoiceStatus, string> = {
-  DRAFT: 'Draft', ACTIVE: 'Active', PAID: 'Paid',
-  CANCELLED: 'Cancelled', EXHAUSTED: 'Exhausted', FAILED: 'Failed',
-}
+type Tab = 'All' | 'Active' | 'Paid' | 'Overdue' | 'Cancelled'
+const TABS: Tab[] = ['All', 'Active', 'Paid', 'Overdue', 'Cancelled']
 
-const STATUS_STYLE: Record<InvoiceStatus, { background: string; color: string }> = {
-  ACTIVE:    { background: '#F3F0FF', color: '#7C3AED' },
-  DRAFT:     { background: '#EFF6FF', color: '#2563EB' },
-  PAID:      { background: '#ECFDF5', color: '#059669' },
-  FAILED:    { background: '#FEF2F2', color: '#EF4444' },
-  EXHAUSTED: { background: '#F1F5F9', color: '#64748B' },
-  CANCELLED: { background: '#F1F5F9', color: '#64748B' },
-}
+const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
-function fmt(amount: { toFixed: (n: number) => string }, currency: string) {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(Number(amount.toFixed(2)))
-}
+export default function InvoicesPage() {
+  const [tab, setTab] = useState<Tab>('All')
+  const { data, isLoading, mutate } = useSWR('/api/v1/invoices', fetcher)
+  const all: InvoiceRowData[] = data?.invoices ?? []
 
-function fmtDate(date: Date) {
-  return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(date))
-}
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
 
-export default async function InvoicesPage() {
-  const user = await getCurrentUser()
-  const invoices = user ? await getInvoices(user.id) : []
+  const invoices = all.filter((inv) => {
+    if (tab === 'All')       return true
+    if (tab === 'Active')    return inv.status === 'ACTIVE'
+    if (tab === 'Paid')      return inv.status === 'PAID'
+    if (tab === 'Overdue')   return inv.status === 'ACTIVE' && new Date(inv.dueDate) < today
+    if (tab === 'Cancelled') return inv.status === 'CANCELLED'
+    return true
+  })
+
+  async function handleMarkPaid(id: string) {
+    const res = await fetch(`/api/v1/invoices/${id}/paid`, { method: 'PATCH' })
+    if (!res.ok) { toast.error('Could not mark as paid.'); return }
+    await mutate()
+    toast.success('Invoice marked as paid.')
+  }
+
+  async function handleCancel(id: string) {
+    const res = await fetch(`/api/v1/invoices/${id}/cancel`, { method: 'PATCH' })
+    if (!res.ok) { toast.error('Could not cancel invoice.'); return }
+    await mutate()
+    toast.success('Invoice cancelled.')
+  }
+
+  async function handleDelete(id: string) {
+    const res = await fetch(`/api/v1/invoices/${id}`, { method: 'DELETE' })
+    if (!res.ok) { toast.error('Could not delete invoice.'); return }
+    await mutate()
+    toast.success('Invoice deleted.')
+  }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold" style={{ color: '#1E1B4B' }}>Your Invoices</h1>
+    <div style={{ maxWidth: 1000 }}>
+      {/* ── Header ──────────────────────────────────── */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+        <div>
+          <h1 style={{ fontSize: 22, fontWeight: 700, color: '#1E1B4B', margin: 0 }}>Invoices</h1>
+          <p style={{ fontSize: 13, color: '#64748B', marginTop: 4, marginBottom: 0 }}>
+            {all.length} invoice{all.length !== 1 ? 's' : ''} total
+          </p>
+        </div>
         <Link
           href="/invoices/new"
-          className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90"
-          style={{ background: 'linear-gradient(135deg, #7C3AED, #6D28D9)' }}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            padding: '10px 20px',
+            borderRadius: 12,
+            fontSize: 14,
+            fontWeight: 600,
+            color: 'white',
+            background: 'linear-gradient(135deg, #7C3AED, #6D28D9)',
+            textDecoration: 'none',
+          }}
         >
           Add invoice
         </Link>
       </div>
 
-      {invoices.length === 0 ? (
-        <div
-          className="flex flex-col items-center justify-center py-28 gap-4 text-center rounded-2xl"
-          style={{ border: '2px dashed #DDD6FE', background: '#FFFFFF' }}
-        >
-          <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl" style={{ background: '#F3F0FF' }}>
-            📄
-          </div>
-          <div>
-            <p className="text-lg font-bold" style={{ color: '#1E1B4B' }}>No invoices yet</p>
-            <p className="text-sm mt-1" style={{ color: '#64748B' }}>Add your first invoice to get started.</p>
-          </div>
-          <Link
-            href="/invoices/new"
-            className="mt-2 inline-flex items-center justify-center px-6 py-2.5 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90"
-            style={{ background: 'linear-gradient(135deg, #7C3AED, #6D28D9)' }}
-          >
-            Add your first invoice
-          </Link>
-        </div>
+      {/* ── Filter tabs ──────────────────────────────── */}
+      <div style={{ display: 'flex', gap: 0, marginBottom: 20, borderBottom: '1px solid #F0EEFF' }}>
+        {TABS.map((t) => {
+          const isActive = tab === t
+          return (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              style={{
+                padding: '8px 16px',
+                fontSize: 14,
+                fontWeight: isActive ? 600 : 400,
+                color: isActive ? '#7C3AED' : '#64748B',
+                background: 'none',
+                border: 'none',
+                borderBottom: `2px solid ${isActive ? '#7C3AED' : 'transparent'}`,
+                cursor: 'pointer',
+                marginBottom: -1,
+                transition: 'color 0.15s, border-color 0.15s',
+              }}
+            >
+              {t}
+            </button>
+          )
+        })}
+      </div>
+
+      {/* ── Table ───────────────────────────────────── */}
+      {isLoading ? (
+        <LoadingSkeleton />
+      ) : invoices.length === 0 ? (
+        <EmptyState tab={tab} />
       ) : (
         <div
-          className="rounded-2xl overflow-hidden"
-          style={{ background: '#FFFFFF', border: '1px solid #F0EEFF', boxShadow: '0 2px 16px rgba(124,58,237,0.06)' }}
+          style={{
+            background: '#FFFFFF',
+            borderRadius: 16,
+            border: '1px solid #F0EEFF',
+            overflow: 'hidden',
+            boxShadow: '0 2px 16px rgba(124,58,237,0.06)',
+          }}
         >
-          <table className="w-full text-sm">
-            <thead style={{ borderBottom: '1px solid #F0EEFF' }}>
-              <tr>
-                {['Client', 'Ref', 'Due date', 'Amount', 'Status', ''].map((h, i) => (
+          <table style={{ width: '100%', fontSize: 14, borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ borderBottom: '1px solid #F0EEFF', background: '#FAFAFF' }}>
+                {['Client', 'Amount', 'Due date', 'Status', ''].map((h, i) => (
                   <th
                     key={i}
-                    className={`px-5 py-3.5 text-xs font-semibold uppercase tracking-wide ${h === 'Amount' ? 'text-right' : 'text-left'}`}
-                    style={{ color: '#94A3B8' }}
+                    style={{
+                      padding: '12px 20px',
+                      textAlign: h === 'Amount' ? 'right' : 'left',
+                      fontSize: 11,
+                      fontWeight: 600,
+                      color: '#94A3B8',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.06em',
+                    }}
                   >
                     {h}
                   </th>
@@ -83,31 +142,83 @@ export default async function InvoicesPage() {
             </thead>
             <tbody>
               {invoices.map((inv) => (
-                <tr key={inv.id} style={{ borderBottom: '1px solid #F0EEFF' }}>
-                  <td className="px-5 py-4 font-semibold" style={{ color: '#1E1B4B' }}>{inv.client.name}</td>
-                  <td className="px-5 py-4" style={{ color: '#64748B' }}>{inv.invoiceRef ?? '—'}</td>
-                  <td className="px-5 py-4" style={{ color: '#64748B' }}>{fmtDate(inv.dueDate)}</td>
-                  <td className="px-5 py-4 text-right font-bold tabular-nums" style={{ color: '#1E1B4B' }}>
-                    {fmt(inv.amount, inv.currency)}
-                  </td>
-                  <td className="px-5 py-4">
-                    <span
-                      className="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full"
-                      style={STATUS_STYLE[inv.status]}
-                    >
-                      {STATUS_LABEL[inv.status]}
-                    </span>
-                  </td>
-                  <td className="px-5 py-4 text-right">
-                    <Link href={`/invoices/${inv.id}`} className="text-sm font-semibold hover:underline" style={{ color: '#7C3AED' }}>
-                      View
-                    </Link>
-                  </td>
-                </tr>
+                <InvoiceRow
+                  key={inv.id}
+                  invoice={inv}
+                  onMarkPaid={handleMarkPaid}
+                  onCancel={handleCancel}
+                  onDelete={handleDelete}
+                />
               ))}
             </tbody>
           </table>
         </div>
+      )}
+    </div>
+  )
+}
+
+function LoadingSkeleton() {
+  return (
+    <div style={{ background: '#FFFFFF', borderRadius: 16, border: '1px solid #F0EEFF', overflow: 'hidden' }}>
+      {[0, 1, 2, 3, 4].map((i) => (
+        <div
+          key={i}
+          className="animate-pulse"
+          style={{
+            display: 'flex',
+            gap: 16,
+            padding: '16px 20px',
+            borderBottom: i < 4 ? '1px solid #F0EEFF' : undefined,
+          }}
+        >
+          {[160, 80, 80, 60, 80].map((w, j) => (
+            <div key={j} style={{ height: 14, width: w, borderRadius: 4, background: '#EDE9FE', flexShrink: 0 }} />
+          ))}
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function EmptyState({ tab }: { tab: Tab }) {
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '64px 32px',
+        textAlign: 'center',
+        borderRadius: 16,
+        border: '2px dashed #DDD6FE',
+        background: '#FFFFFF',
+      }}
+    >
+      <div style={{ fontSize: 32, marginBottom: 12 }}>📄</div>
+      <p style={{ fontSize: 15, fontWeight: 600, color: '#1E1B4B', margin: '0 0 4px' }}>
+        {tab === 'All' ? 'No invoices yet' : `No ${tab.toLowerCase()} invoices`}
+      </p>
+      <p style={{ fontSize: 13, color: '#64748B', margin: '0 0 20px' }}>
+        {tab === 'All' ? 'Add your first invoice to get started.' : 'Try a different filter.'}
+      </p>
+      {tab === 'All' && (
+        <Link
+          href="/invoices/new"
+          style={{
+            display: 'inline-flex',
+            padding: '10px 20px',
+            borderRadius: 12,
+            fontSize: 14,
+            fontWeight: 600,
+            color: 'white',
+            background: 'linear-gradient(135deg, #7C3AED, #6D28D9)',
+            textDecoration: 'none',
+          }}
+        >
+          Add your first invoice
+        </Link>
       )}
     </div>
   )
