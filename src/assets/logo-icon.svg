@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <!-- Document body (light indigo fill) -->
+  <path d="M5 2H20L28 10V29C28 29.6 27.6 30 27 30H5C4.4 30 4 29.6 4 29V3C4 2.4 4.4 2 5 2Z" fill="#EEF2FF"/>
+  <!-- Document border -->
+  <path d="M5 2H20L28 10V29C28 29.6 27.6 30 27 30H5C4.4 30 4 29.6 4 29V3C4 2.4 4.4 2 5 2Z" stroke="#4F46E5" stroke-width="1.5" stroke-linejoin="round"/>
+  <!-- Fold corner (solid indigo) -->
+  <path d="M20 2L28 10H22C20.9 10 20 9.1 20 8V2Z" fill="#4F46E5"/>
+  <!-- Arrow pointing up-right (emerald, the nudge) -->
+  <path d="M9 23L18 14" stroke="#10B981" stroke-width="2.2" stroke-linecap="round"/>
+  <polyline points="13,14 18,14 18,19" stroke="#10B981" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>

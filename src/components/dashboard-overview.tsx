@@ -110,10 +110,10 @@ export function DashboardOverview() {
   const total          = invoices.length || 1
 
   const stats = [
-    { label: t.active,    value: activeCount.toString(),    border: '#7C3AED' },
-    { label: t.overdue,   value: overdueCount.toString(),   border: '#EF4444' },
-    { label: t.paid,      value: paidCount.toString(),      border: '#059669' },
-    { label: t.cancelled, value: cancelledCount.toString(), border: '#94A3B8' },
+    { label: t.active,    value: activeCount.toString(),    bg: '#F3F0FF', color: '#7C3AED' },
+    { label: t.overdue,   value: overdueCount.toString(),   bg: '#FDF2FF', color: '#C026D3' },
+    { label: t.paid,      value: paidCount.toString(),      bg: '#ECFDF5', color: '#059669' },
+    { label: t.cancelled, value: cancelledCount.toString(), bg: '#F8F7FF', color: '#94A3B8' },
   ]
 
   const breakdown = [
@@ -139,28 +139,22 @@ export function DashboardOverview() {
       <div className="grid grid-cols-2 md:grid-cols-4" style={{ gap: 16, marginBottom: 24 }}>
         {isLoading
           ? [0, 1, 2, 3].map((i) => (
-              <div key={i} style={{ background: '#FFF', borderRadius: 14, padding: 20, border: '1px solid #F0EEFF' }}>
-                <Bone w="55%" h={12} r={4} />
-                <div style={{ marginTop: 10 }}><Bone w="45%" h={28} r={6} /></div>
+              <div key={i} style={{ background: '#F3F0FF', borderRadius: 20, padding: '24px 28px' }}>
+                <Bone w="55%" h={14} r={4} />
+                <div style={{ marginTop: 14 }}><Bone w="40%" h={44} r={8} /></div>
               </div>
             ))
           : stats.map((s) => (
               <div
                 key={s.label}
-                style={{
-                  background: '#FFFFFF',
-                  borderRadius: 14,
-                  padding: '18px 20px',
-                  borderTop: '1px solid #F0EEFF',
-                  borderRight: '1px solid #F0EEFF',
-                  borderBottom: '1px solid #F0EEFF',
-                  borderLeft: `4px solid ${s.border}`,
-                }}
+                style={{ background: s.bg, borderRadius: 20, padding: '24px 28px' }}
               >
-                <p style={{ fontSize: 11, color: '#78716C', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 8px' }}>
+                <p style={{ fontSize: 14, fontWeight: 600, color: s.color, margin: '0 0 14px' }}>
                   {s.label}
                 </p>
-                <p style={{ fontSize: 22, fontWeight: 700, color: '#1E1B4B', margin: 0 }}>{s.value}</p>
+                <p style={{ fontSize: 48, fontWeight: 900, color: '#1E1B4B', margin: 0, lineHeight: 1 }}>
+                  {s.value}
+                </p>
               </div>
             ))}
       </div>

@@ -1,10 +1,63 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 150" width="100%" height="100%">
   <defs>
-    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#7C3AED"/>
-      <stop offset="100%" stop-color="#EC4899"/>
+    <!-- Smooth, vibrant gradient for the arrow -->
+    <linearGradient id="arrowGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#8B5CF6" />
+      <stop offset="100%" stop-color="#D946EF" />
     </linearGradient>
+    
+    <style>
+      /* Clean, continuous lines for a smooth, minimal look */
+      .doc-line { 
+        fill: none; 
+        stroke: #6D28D9; 
+        stroke-width: 8.5; 
+        stroke-linecap: round; 
+        stroke-linejoin: round; 
+      }
+      .arrow-line { 
+        fill: none; 
+        stroke: url(#arrowGrad); 
+        stroke-width: 8.5; 
+        stroke-linecap: round; 
+        stroke-linejoin: round; 
+      }
+      
+      /* Refined, modern typography */
+      .text-invoice { 
+        font-family: 'Inter', system-ui, -apple-system, sans-serif; 
+        font-weight: 700; 
+        font-size: 54px; 
+        fill: #6D28D9; 
+        letter-spacing: -1.5px; 
+      }
+      .text-nudge { 
+        font-family: 'Inter', system-ui, -apple-system, sans-serif; 
+        font-weight: 400; 
+        font-size: 54px; 
+        fill: #8B5CF6; 
+        letter-spacing: -0.5px; 
+      }
+    </style>
   </defs>
-  <rect width="32" height="32" rx="8" fill="url(#g)"/>
-  <path d="M16 4L27 13L16 28L5 13Z" fill="white"/>
+
+  <g transform="translate(35, 12)">
+    <!-- 1. Smooth Document Outline 
+         (Notice the line deliberately stops at V75 to create a clean negative space gap for the arrow) -->
+    <path class="doc-line" d="M70,20 H45 c-8.8,0 -16,7.2 -16,16 v68 c0,8.8 7.2,16 16,16 h40 c8.8,0 16,-7.2 16,-16 V75" />
+    
+    <!-- 2. Minimalist Folded Corner -->
+    <path class="doc-line" d="M70,20 v15 c0,8.8 7.2,16 16,16 h15" />
+
+    <!-- 3. Sweeping Nudge Arrow
+         (Passes perfectly through the negative space gap created above) -->
+    <path class="arrow-line" d="M45,90 C65,90 80,63 110,63 L 132,63" />
+    <!-- Arrowhead -->
+    <path class="arrow-line" d="M118,49 L132,63 L118,77" />
+  </g>
+
+  <!-- Brand Text -->
+  <text x="195" y="94">
+    <tspan class="text-invoice">Invoice</tspan><tspan class="text-nudge">Nudge</tspan>
+  </text>
 </svg>

@@ -10,6 +10,10 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: 'InvoiceNudge',
   description: 'Automated invoice follow-up reminders for freelancers',
+  icons: {
+    icon: [{ url: '/icon.svg', type: 'image/svg+xml' }],
+    shortcut: ['/icon.svg'],
+  },
 }
 
 export default function RootLayout({
@@ -21,8 +25,6 @@ export default function RootLayout({
       signUpForceRedirectUrl="/invoices/new"
     >
       <html lang="en" className="scroll-smooth">
-        {/* React 19 hoists <link> from body to <head> automatically */}
-        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <body className={`${inter.className} antialiased`}>
           {children}
           <Toaster />

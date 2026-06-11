@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import { SignIn } from '@clerk/nextjs'
 
 const appearance = {
@@ -28,16 +29,8 @@ export default function SignInPage() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-start pt-10 sm:justify-center sm:pt-0" style={{ background: '#F8F7FF' }}>
       <div className="text-center mb-8 w-full max-w-sm px-4 sm:px-0">
-        <a href="/" className="inline-flex flex-col items-center gap-2">
-          <div
-            className="w-10 h-10 rounded-2xl flex items-center justify-center"
-            style={{ background: 'linear-gradient(135deg, #7C3AED, #EC4899)' }}
-          >
-            <svg width="16" height="16" viewBox="0 0 14 14" fill="white">
-              <path d="M7 0.5L13 5.5L7 13.5L1 5.5L7 0.5Z" />
-            </svg>
-          </div>
-          <span className="text-2xl font-bold" style={{ color: '#1E1B4B' }}>InvoiceNudge</span>
+        <a href="/" className="inline-flex flex-col items-center gap-3">
+          <Image src="/favicon.svg" alt="InvoiceNudge" width={160} height={40} unoptimized />
           <p className="text-sm" style={{ color: '#64748B' }}>Get paid. Skip the awkward part.</p>
         </a>
       </div>

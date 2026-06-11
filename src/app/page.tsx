@@ -1,18 +1,6 @@
+import Image from 'next/image'
 import Link from 'next/link'
 import { auth } from '@clerk/nextjs/server'
-
-function LogoIcon({ size = 32 }: { size?: number }) {
-  return (
-    <div
-      className="rounded-xl flex items-center justify-center flex-shrink-0"
-      style={{ width: size, height: size, background: 'linear-gradient(135deg, #7C3AED, #EC4899)' }}
-    >
-      <svg width={size * 0.44} height={size * 0.44} viewBox="0 0 14 14" fill="white">
-        <path d="M7 0.5L13 5.5L7 13.5L1 5.5L7 0.5Z" />
-      </svg>
-    </div>
-  )
-}
 
 export default async function HomePage() {
   const { userId } = await auth()
@@ -21,9 +9,8 @@ export default async function HomePage() {
 
       {/* ── NAVBAR ─────────────────────────────────────────────── */}
       <nav className="flex items-center justify-between px-4 sm:px-8 py-5 max-w-7xl mx-auto">
-        <div className="flex items-center gap-2.5">
-          <LogoIcon size={32} />
-          <span className="text-lg font-bold" style={{ color: '#1E1B4B' }}>InvoiceNudge</span>
+        <div className="flex items-center">
+          <Image src="/favicon.svg" alt="InvoiceNudge" width={144} height={36} unoptimized />
         </div>
 
         <div className="hidden md:flex items-center gap-8">
@@ -59,41 +46,47 @@ export default async function HomePage() {
       </nav>
 
       {/* ── HERO ────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden min-h-[420px] lg:min-h-[580px] flex items-center">
+      <section className="relative overflow-hidden flex items-center min-h-[520px] lg:min-h-[600px]">
+        {/* Desktop-only purple right panel */}
         <div
-          className="absolute top-0 right-0 pointer-events-none"
+          className="hidden lg:block absolute top-0 right-0 pointer-events-none"
           style={{
-            width: '56%', height: '100%',
+            width: '50%', height: '100%',
             background: 'linear-gradient(140deg, #7C3AED 0%, #9333EA 35%, #C026D3 65%, #EC4899 100%)',
             borderBottomLeftRadius: '44% 55%',
           }}
         />
+        {/* Mobile-only soft bottom gradient */}
+        <div
+          className="lg:hidden absolute bottom-0 inset-x-0 pointer-events-none"
+          style={{ height: '35%', background: 'linear-gradient(to top, rgba(124,58,237,0.07), transparent)' }}
+        />
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-8 py-12 lg:py-16 w-full flex flex-col lg:flex-row items-center gap-10 lg:gap-16">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-8 py-14 lg:py-20 w-full grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-12 items-center">
           {/* Left — text */}
-          <div className="w-full lg:flex-1 lg:max-w-lg">
+          <div className="w-full min-w-0 flex flex-col items-center lg:items-start text-center lg:text-left">
             <div
               className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium mb-5"
               style={{ background: '#F3F0FF', color: '#7C3AED', border: '1px solid #DDD6FE' }}
             >
               Built for freelancers · Free to start
             </div>
-            <h1 className="text-3xl sm:text-5xl font-extrabold leading-tight mb-5" style={{ color: '#1E1B4B' }}>
+            <h1 className="text-4xl sm:text-5xl font-extrabold leading-tight mb-5" style={{ color: '#1E1B4B' }}>
               Get paid.{' '}
               <span style={{ color: '#7C3AED' }}>Skip the</span>
               <br />
               <span style={{ color: '#7C3AED' }}>awkward part.</span>
             </h1>
-            <p className="text-base sm:text-lg leading-relaxed mb-8" style={{ color: '#64748B' }}>
+            <p className="text-base sm:text-lg leading-relaxed mb-8 max-w-sm sm:max-w-md lg:max-w-none" style={{ color: '#64748B' }}>
               InvoiceNudge automatically follows up on your unpaid invoices — so you never have to
               write another &ldquo;just following up…&rdquo; email again.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-3 mb-8">
+            <div className="flex flex-col sm:flex-row gap-3 mb-8 w-full sm:w-auto">
               {userId ? (
                 <Link
                   href="/dashboard"
-                  className="flex items-center justify-center w-full sm:w-auto px-7 py-3.5 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                  className="flex items-center justify-center px-7 py-3.5 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90 w-full sm:w-auto"
                   style={{ background: '#4F46E5', minHeight: 44 }}
                 >
                   Go to dashboard
@@ -102,14 +95,14 @@ export default async function HomePage() {
                 <>
                   <Link
                     href="/sign-up"
-                    className="flex items-center justify-center w-full sm:w-auto px-7 py-3.5 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                    className="flex items-center justify-center px-7 py-3.5 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90 w-full sm:w-auto"
                     style={{ background: 'linear-gradient(135deg, #7C3AED, #6D28D9)', minHeight: 44 }}
                   >
                     Get Started Free
                   </Link>
                   <Link
                     href="/sign-in"
-                    className="flex items-center justify-center w-full sm:w-auto px-7 py-3.5 rounded-xl text-sm font-semibold transition-colors hover:bg-white"
+                    className="flex items-center justify-center px-7 py-3.5 rounded-xl text-sm font-semibold transition-colors hover:bg-white w-full sm:w-auto"
                     style={{ border: '2px solid #7C3AED', color: '#7C3AED', background: 'transparent', minHeight: 44 }}
                   >
                     Log in
@@ -119,7 +112,7 @@ export default async function HomePage() {
             </div>
 
             {!userId && (
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-sm" style={{ color: '#64748B' }}>
+              <div className="flex flex-col items-center lg:items-start sm:flex-row sm:items-center gap-2 text-sm" style={{ color: '#64748B' }}>
                 <span>
                   Already using InvoiceNudge?{' '}
                   <Link href="/sign-in" className="font-bold" style={{ color: '#7C3AED' }}>SIGN IN</Link>
@@ -131,19 +124,18 @@ export default async function HomePage() {
           </div>
 
           {/* Right — app preview (desktop only) */}
-          <div className="hidden lg:flex flex-1 justify-center lg:justify-end">
+          <div className="hidden lg:flex justify-end">
             <div
-              className="rounded-2xl overflow-hidden shadow-2xl"
-              style={{ width: 420, background: 'white', border: '1px solid #E8E8F0' }}
+              className="rounded-2xl overflow-hidden shadow-2xl w-full"
+              style={{ maxWidth: 420, background: 'white', border: '1px solid #E8E8F0' }}
             >
               <div className="flex" style={{ height: 300 }}>
                 <div
                   className="flex flex-col py-4 px-3 gap-1"
                   style={{ width: 148, background: '#FAFAF8', borderRight: '1px solid #F1F0FF', flexShrink: 0 }}
                 >
-                  <div className="flex items-center gap-2 px-2 py-1 mb-3">
-                    <LogoIcon size={22} />
-                    <span className="text-xs font-bold" style={{ color: '#1E1B4B' }}>InvoiceNudge</span>
+                  <div className="flex items-center px-2 py-1 mb-3">
+                    <Image src="/favicon.svg" alt="InvoiceNudge" width={88} height={22} unoptimized />
                   </div>
                   {[
                     { label: 'Dashboard', active: true },
@@ -460,12 +452,11 @@ export default async function HomePage() {
 
       {/* ── FOOTER ────────────────────────────────────────────────── */}
       <footer className="px-4 sm:px-8 py-6 sm:py-8" style={{ borderTop: '1px solid #E8E8F0', background: '#FFFFFF' }}>
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-sm" style={{ color: '#64748B' }}>
-          <div className="flex items-center gap-2.5">
-            <LogoIcon size={24} />
-            <span className="font-semibold" style={{ color: '#7C3AED' }}>InvoiceNudge</span>
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-center sm:text-left" style={{ color: '#64748B' }}>
+          <div className="flex items-center justify-center sm:justify-start">
+            <Image src="/favicon.svg" alt="InvoiceNudge" width={112} height={28} unoptimized />
           </div>
-          <span>Get paid. Skip the awkward part.</span>
+          <span className="hidden sm:block">Get paid. Skip the awkward part.</span>
           <span>Made for freelancers</span>
         </div>
       </footer>

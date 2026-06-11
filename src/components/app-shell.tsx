@@ -2,25 +2,11 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { usePathname } from 'next/navigation'
+import Image from 'next/image'
 import Link from 'next/link'
 import { SignOutButton } from '@clerk/nextjs'
 import { SidebarNav } from './sidebar-nav'
 import { LangProvider, useLang } from '@/lib/lang-context'
-
-function LogoIcon({ size = 30 }: { size?: number }) {
-  const iconSize = Math.round(size * 0.57)
-  return (
-    <div style={{
-      width: size, height: size, borderRadius: Math.round(size * 0.38),
-      background: 'linear-gradient(135deg, #7C3AED, #EC4899)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-    }}>
-      <svg width={iconSize} height={iconSize} viewBox="0 0 14 14" fill="white">
-        <path d="M7 0.5L13 5.5L7 13.5L1 5.5L7 0.5Z" />
-      </svg>
-    </div>
-  )
-}
 
 function SignOutIcon() {
   return (
@@ -100,18 +86,19 @@ function SidebarContent({ isPro, isExpanded, onNavClick }: { isPro: boolean; isE
         style={{
           display: 'flex',
           alignItems: 'center',
-          // Same centering math as nav items: padding transitions with sidebar padding
-          padding: isExpanded ? '0 8px' : '0 17px',
+          justifyContent: isExpanded ? 'flex-start' : 'center',
+          padding: isExpanded ? '0 8px' : '0',
           marginBottom: 32,
           textDecoration: 'none',
           flexShrink: 0,
           transition: 'padding 200ms ease-in-out',
         }}
       >
-        <LogoIcon />
-        <span style={{ ...textStyle, marginLeft: isExpanded ? 10 : 0, fontSize: 14, fontWeight: 700, color: '#1E1B4B' }}>
-          InvoiceNudge
-        </span>
+        {isExpanded ? (
+          <Image src="/favicon.svg" alt="InvoiceNudge" width={120} height={30} unoptimized />
+        ) : (
+          <Image src="/icon.svg" alt="InvoiceNudge" width={28} height={28} unoptimized />
+        )}
       </Link>
 
       {/* Nav */}
@@ -285,9 +272,8 @@ export function AppShell({ isPro, children }: { isPro: boolean; children: React.
             className="flex lg:hidden items-center justify-between sticky top-0 z-40 px-4"
             style={{ height: 56, background: '#FFFFFF', borderBottom: '1px solid #F0EEFF' }}
           >
-            <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none' }}>
-              <LogoIcon size={26} />
-              <span style={{ fontSize: 14, fontWeight: 700, color: '#1E1B4B' }}>InvoiceNudge</span>
+            <Link href="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
+              <Image src="/favicon.svg" alt="InvoiceNudge" width={104} height={26} unoptimized />
             </Link>
             <button
               onClick={() => setDrawerOpen(true)}
