@@ -1,17 +1,15 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect } from 'react'
 import useSWR from 'swr'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
-import { useEffect } from 'react'
 import { toast } from 'sonner'
+import { useLang } from '@/lib/lang-context'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
 type Status = 'DRAFT' | 'ACTIVE' | 'PAID' | 'CANCELLED' | 'EXHAUSTED' | 'FAILED'
-type Currency = 'USD' | 'EUR' | 'GBP'
-type Lang = 'en' | 'fr'
 
 interface Invoice {
   id: string
@@ -27,10 +25,10 @@ const T = {
   en: {
     title: 'Dashboard',
     subtitle: 'Your invoice activity at a glance.',
-    outstanding: 'Outstanding',
-    collected: 'Collected',
-    overdue: 'Overdue',
     active: 'Active',
+    overdue: 'Overdue',
+    paid: 'Paid',
+    cancelled: 'Cancelled',
     recentInvoices: 'Recent Invoices',
     viewAll: 'View all →',
     noInvoices: 'No invoices yet.',
@@ -45,10 +43,10 @@ const T = {
   fr: {
     title: 'Tableau de bord',
     subtitle: "Votre activité de facturation en un coup d'œil.",
-    outstanding: 'En attente',
-    collected: 'Encaissé',
-    overdue: 'En retard',
     active: 'Actif',
+    overdue: 'En retard',
+    paid: 'Payé',
+    cancelled: 'Annulé',
     recentInvoices: 'Factures récentes',
     viewAll: 'Tout voir →',
     noInvoices: 'Aucune facture.',
@@ -71,14 +69,7 @@ const STATUS_COLORS: Record<Status, { bg: string; fg: string }> = {
   CANCELLED: { bg: '#F1F5F9', fg: '#64748B' },
 }
 
-function fmtCurrency(n: number, currency: Currency, locale: string) {
-  return new Intl.NumberFormat(locale, {
-    style: 'currency', currency,
-    minimumFractionDigits: 0, maximumFractionDigits: 0,
-  }).format(n)
-}
-
-function fmtFull(amount: string, currency: Currency, locale: string) {
+function fmtFull(amount: string, currency: string, locale: string) {
   return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(parseFloat(amount))
 }
 
@@ -92,40 +83,37 @@ function Bone({ w, h, r = 8 }: { w: string; h: number; r?: number }) {
 
 export function DashboardOverview() {
   const searchParams = useSearchParams()
-  const { data, isLoading } = useSWR('/api/v1/invoices', fetcher, { refreshInterval: 30_000 })
+  const { lang } = useLang()
+  const { data, isLoading } = useSWR('/api/v1/invoices', fetcher, {
+    refreshInterval: 30_000,
+    revalidateOnFocus: true,
+    revalidateOnReconnect: true,
+    dedupingInterval: 5000,
+  })
   const invoices: Invoice[] = data?.invoices ?? []
-
-  const [currency, setCurrency] = useState<Currency>('USD')
-  const [lang, setLang] = useState<Lang>('en')
   const t = T[lang]
   const locale = lang === 'fr' ? 'fr-FR' : 'en-US'
 
   useEffect(() => {
     if (searchParams.get('activated') === 'true') {
-      toast.success('Reminders activated! We\'ll check in before every send.')
+      toast.success("Reminders activated! We'll check in before every send.")
     }
   }, [])
 
   const today = new Date()
   today.setHours(0, 0, 0, 0)
 
-  const outstanding = invoices
-    .filter((i) => ['ACTIVE', 'DRAFT'].includes(i.status))
-    .reduce((s, i) => s + parseFloat(i.amount), 0)
-  const collected = invoices
-    .filter((i) => i.status === 'PAID')
-    .reduce((s, i) => s + parseFloat(i.amount), 0)
-  const overdueCount = invoices.filter((i) => i.status === 'ACTIVE' && new Date(i.dueDate) < today).length
-  const activeCount = invoices.filter((i) => i.status === 'ACTIVE').length
-  const paidCount = invoices.filter((i) => i.status === 'PAID').length
+  const activeCount    = invoices.filter((i) => i.status === 'ACTIVE').length
+  const overdueCount   = invoices.filter((i) => i.status === 'ACTIVE' && new Date(i.dueDate) < today).length
+  const paidCount      = invoices.filter((i) => i.status === 'PAID').length
   const cancelledCount = invoices.filter((i) => i.status === 'CANCELLED').length
-  const total = invoices.length || 1
+  const total          = invoices.length || 1
 
   const stats = [
-    { label: t.outstanding, value: fmtCurrency(outstanding, currency, locale), border: '#7C3AED' },
-    { label: t.collected,   value: fmtCurrency(collected, currency, locale),   border: '#059669' },
-    { label: t.overdue,     value: overdueCount.toString(),                    border: '#EF4444' },
-    { label: t.active,      value: activeCount.toString(),                     border: '#7C3AED' },
+    { label: t.active,    value: activeCount.toString(),    border: '#7C3AED' },
+    { label: t.overdue,   value: overdueCount.toString(),   border: '#EF4444' },
+    { label: t.paid,      value: paidCount.toString(),      border: '#059669' },
+    { label: t.cancelled, value: cancelledCount.toString(), border: '#94A3B8' },
   ]
 
   const breakdown = [
@@ -142,66 +130,13 @@ export function DashboardOverview() {
   return (
     <div style={{ maxWidth: 1000 }}>
       {/* ── Header ─────────────────────────────────────── */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 24, gap: 12, flexWrap: 'wrap' }}>
-        <div>
-          <h1 style={{ fontSize: 22, fontWeight: 700, color: '#1E1B4B', margin: 0 }}>{t.title}</h1>
-          <p style={{ fontSize: 13, color: '#64748B', marginTop: 4, marginBottom: 0 }}>{t.subtitle}</p>
-        </div>
-
-        {/* Controls */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-          {/* Currency selector */}
-          <select
-            value={currency}
-            onChange={(e) => setCurrency(e.target.value as Currency)}
-            style={{
-              padding: '7px 10px',
-              borderRadius: 10,
-              border: '1px solid #E8E8F0',
-              fontSize: 13,
-              fontWeight: 600,
-              color: '#1E1B4B',
-              background: '#FFFFFF',
-              cursor: 'pointer',
-              boxShadow: '0 1px 4px rgba(124,58,237,0.06)',
-              outline: 'none',
-            }}
-          >
-            <option value="USD">$ USD</option>
-            <option value="EUR">€ EUR</option>
-            <option value="GBP">£ GBP</option>
-          </select>
-
-          {/* Language toggle */}
-          <div style={{ display: 'flex', borderRadius: 10, border: '1px solid #E8E8F0', overflow: 'hidden', boxShadow: '0 1px 4px rgba(124,58,237,0.06)' }}>
-            {(['en', 'fr'] as const).map((l) => (
-              <button
-                key={l}
-                onClick={() => setLang(l)}
-                style={{
-                  padding: '7px 13px',
-                  fontSize: 12,
-                  fontWeight: 700,
-                  border: 'none',
-                  cursor: 'pointer',
-                  background: lang === l ? '#7C3AED' : '#FFFFFF',
-                  color: lang === l ? '#FFFFFF' : '#64748B',
-                  letterSpacing: '0.04em',
-                  transition: 'background 0.15s, color 0.15s',
-                }}
-              >
-                {l.toUpperCase()}
-              </button>
-            ))}
-          </div>
-        </div>
+      <div style={{ marginBottom: 24 }}>
+        <h1 style={{ fontSize: 22, fontWeight: 700, color: '#1E1B4B', margin: 0 }}>{t.title}</h1>
+        <p style={{ fontSize: 13, color: '#64748B', marginTop: 4, marginBottom: 0 }}>{t.subtitle}</p>
       </div>
 
       {/* ── Stat cards ─────────────────────────────────── */}
-      <div
-        className="grid grid-cols-2 md:grid-cols-4"
-        style={{ gap: 16, marginBottom: 24 }}
-      >
+      <div className="grid grid-cols-2 md:grid-cols-4" style={{ gap: 16, marginBottom: 24 }}>
         {isLoading
           ? [0, 1, 2, 3].map((i) => (
               <div key={i} style={{ background: '#FFF', borderRadius: 14, padding: 20, border: '1px solid #F0EEFF' }}>
@@ -235,15 +170,7 @@ export function DashboardOverview() {
 
         {/* Recent Invoices */}
         <div style={{ background: '#FFFFFF', borderRadius: 16, border: '1px solid #F0EEFF', overflow: 'hidden' }}>
-          <div
-            style={{
-              padding: '14px 20px',
-              borderBottom: '1px solid #F0EEFF',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-            }}
-          >
+          <div style={{ padding: '14px 20px', borderBottom: '1px solid #F0EEFF', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <span style={{ fontSize: 14, fontWeight: 600, color: '#1E1B4B' }}>{t.recentInvoices}</span>
             <Link href="/invoices" style={{ fontSize: 13, fontWeight: 600, color: '#7C3AED', textDecoration: 'none' }}>
               {t.viewAll}
@@ -289,7 +216,7 @@ export function DashboardOverview() {
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
                       <span style={{ fontSize: 12, fontWeight: 700, color: '#1E1B4B' }}>
-                        {fmtFull(inv.amount, currency, locale)}
+                        {fmtFull(inv.amount, inv.currency, locale)}
                       </span>
                       <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 999, background: s.bg, color: s.fg }}>
                         {t.statuses[inv.status]}

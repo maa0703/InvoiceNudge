@@ -4,6 +4,7 @@ export type ReminderTemplateVars = {
   amount: string
   dueDate: string
   cancelUrl: string
+  freelancerName: string
 }
 
 type EmailTemplate = { subject: string; text: string; html: string }
@@ -18,12 +19,13 @@ export function reminder1(v: ReminderTemplateVars): EmailTemplate {
       ``,
       `If you've already sent payment, please disregard this. Otherwise, we'd appreciate settlement at your earliest convenience.`,
       ``,
-      `Thanks`,
+      `Thanks,`,
+      `${v.freelancerName}`,
     ].join('\n'),
     html: `<p>Hi ${v.clientName},</p>
 <p>Just a quick note — invoice <strong>${v.invoiceRef}</strong> for <strong>${v.amount}</strong> was due on ${v.dueDate}.</p>
 <p>If you've already sent payment, please disregard this. Otherwise, we'd appreciate settlement at your earliest convenience.</p>
-<p>Thanks</p>`,
+<p>Thanks,<br>${v.freelancerName}</p>`,
   }
 }
 
@@ -37,12 +39,13 @@ export function reminder2(v: ReminderTemplateVars): EmailTemplate {
       ``,
       `Please arrange payment as soon as possible. If there's an issue, feel free to reach out.`,
       ``,
-      `Thanks`,
+      `Thanks,`,
+      `${v.freelancerName}`,
     ].join('\n'),
     html: `<p>Hi ${v.clientName},</p>
 <p>This is a second reminder that invoice <strong>${v.invoiceRef}</strong> for <strong>${v.amount}</strong> (due ${v.dueDate}) is still outstanding.</p>
 <p>Please arrange payment as soon as possible. If there's an issue, feel free to reach out.</p>
-<p>Thanks</p>`,
+<p>Thanks,<br>${v.freelancerName}</p>`,
   }
 }
 
@@ -56,12 +59,13 @@ export function reminder3(v: ReminderTemplateVars): EmailTemplate {
       ``,
       `Please make payment immediately. If you have questions, please get in touch.`,
       ``,
-      `Thanks`,
+      `Thanks,`,
+      `${v.freelancerName}`,
     ].join('\n'),
     html: `<p>Hi ${v.clientName},</p>
 <p>This is our third reminder that invoice <strong>${v.invoiceRef}</strong> for <strong>${v.amount}</strong> (due ${v.dueDate}) remains unpaid.</p>
 <p>Please make payment immediately. If you have questions, please get in touch.</p>
-<p>Thanks</p>`,
+<p>Thanks,<br>${v.freelancerName}</p>`,
   }
 }
 
@@ -73,14 +77,15 @@ export function reminder4(v: ReminderTemplateVars): EmailTemplate {
       ``,
       `This is our final notice regarding invoice ${v.invoiceRef} for ${v.amount}, due on ${v.dueDate}.`,
       ``,
-      `Immediate payment is required. If we do not hear from you, we may need to pursue further action.`,
+      `Please arrange payment at your earliest opportunity. If you have questions or need to discuss, please reply to this email.`,
       ``,
-      `Thank you`,
+      `Thank you,`,
+      `${v.freelancerName}`,
     ].join('\n'),
     html: `<p>Hi ${v.clientName},</p>
 <p>This is our final notice regarding invoice <strong>${v.invoiceRef}</strong> for <strong>${v.amount}</strong>, due on ${v.dueDate}.</p>
-<p>Immediate payment is required. If we do not hear from you, we may need to pursue further action.</p>
-<p>Thank you</p>`,
+<p>Please arrange payment at your earliest opportunity. If you have questions or need to discuss, please reply to this email.</p>
+<p>Thank you,<br>${v.freelancerName}</p>`,
   }
 }
 

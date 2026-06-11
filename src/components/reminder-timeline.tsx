@@ -103,10 +103,10 @@ export function ReminderTimeline({ reminders, onRetry }: Props) {
             </div>
 
             {/* Content */}
-            <div className={`flex-1 flex items-start justify-between gap-2 ${isLast ? '' : 'pb-5'}`}>
-              <div>
+            <div className={`flex-1 min-w-0 flex items-start justify-between gap-2 ${isLast ? '' : 'pb-5'}`}>
+              <div className="min-w-0">
                 <p className="text-sm font-semibold" style={{ color: '#1E1B4B' }}>{STEP_LABEL[step]}</p>
-                <p className="text-xs mt-0.5" style={{ color: '#64748B' }}>
+                <p className="text-xs mt-0.5 truncate" style={{ color: '#64748B' }}>
                   {!reminder && 'Not yet scheduled'}
                   {reminder?.status === 'SENT' && reminder.sentAt && `Sent ${fmtDateTime(reminder.sentAt)}`}
                   {reminder?.status === 'SCHEDULED' && `Scheduled for ${fmtDate(reminder.scheduledAt)}`}

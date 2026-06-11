@@ -27,8 +27,8 @@ const appearance = {
 
 export default function SignUpPage() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center" style={{ background: '#F8F7FF' }}>
-      <div className="text-center mb-8">
+    <div className="min-h-screen flex flex-col items-center justify-start pt-10 sm:justify-center sm:pt-0" style={{ background: '#F8F7FF' }}>
+      <div className="text-center mb-8 w-full max-w-sm px-4 sm:px-0">
         <a href="/" className="inline-flex flex-col items-center gap-2">
           <div
             className="w-10 h-10 rounded-2xl flex items-center justify-center"

@@ -27,7 +27,7 @@ export async function processCheckins(): Promise<number> {
     })
     const cancelUrl = `${APP_URL}/reminders/cancel?token=${reminder.checkinToken}&id=${reminder.id}`
 
-    const vars: ReminderTemplateVars = { clientName: client.name, invoiceRef, amount, dueDate, cancelUrl }
+    const vars: ReminderTemplateVars = { clientName: client.name, invoiceRef, amount, dueDate, cancelUrl, freelancerName: user.displayName }
 
     try {
       await resend.emails.send({
@@ -73,6 +73,7 @@ export async function processReminders(): Promise<number> {
       amount,
       dueDate,
       cancelUrl: '',
+      freelancerName: user.displayName,
     }
     const email = templateFn(vars)
 

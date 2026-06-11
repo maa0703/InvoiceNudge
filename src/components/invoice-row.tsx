@@ -2,7 +2,9 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import { Spinner } from '@/components/ui/spinner'
 import {
   Dialog,
   DialogContent,
@@ -172,7 +174,7 @@ export function InvoiceRow({ invoice, onMarkPaid, onCancel, onDelete }: Props) {
               onClick={handleConfirmPaid}
               disabled={markPaidPending}
             >
-              {markPaidPending ? '…' : 'Confirm'}
+              {markPaidPending ? <Spinner size={14} /> : 'Confirm'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -192,7 +194,7 @@ export function InvoiceRow({ invoice, onMarkPaid, onCancel, onDelete }: Props) {
               onClick={handleConfirmCancel}
               disabled={cancelPending}
             >
-              {cancelPending ? '…' : 'Cancel invoice'}
+              {cancelPending ? <Spinner size={14} /> : 'Cancel invoice'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -212,7 +214,89 @@ export function InvoiceRow({ invoice, onMarkPaid, onCancel, onDelete }: Props) {
               onClick={handleConfirmDelete}
               disabled={deletePending}
             >
-              {deletePending ? '…' : 'Delete'}
+              {deletePending ? <Spinner size={14} /> : 'Delete'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  )
+}
+
+// Mobile card view — used on small screens instead of the table row
+export function InvoiceCard({ invoice, onMarkPaid }: Pick<Props, 'invoice' | 'onMarkPaid'>) {
+  const [markPaidPending, setMarkPaidPending] = useState(false)
+  const [markPaidOpen, setMarkPaidOpen] = useState(false)
+
+  async function handleConfirmPaid() {
+    setMarkPaidPending(true)
+    try { await onMarkPaid(invoice.id); setMarkPaidOpen(false) }
+    finally { setMarkPaidPending(false) }
+  }
+
+  return (
+    <>
+      <div style={{ padding: '14px 16px', borderBottom: '1px solid #E8E4DC' }}>
+        {/* Client + status */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+          <span style={{ fontSize: 14, fontWeight: 500, color: '#1E1B4B' }}>{invoice.client.name}</span>
+          <span
+            className="inline-flex items-center px-2.5 py-0.5 text-xs font-semibold rounded-full"
+            style={STATUS_STYLE[invoice.status]}
+          >
+            {STATUS_LABEL[invoice.status]}
+          </span>
+        </div>
+        {/* Amount + due date */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+          <span style={{ fontSize: 15, fontWeight: 600, color: '#7C3AED' }}>
+            {fmtAmount(invoice.amount, invoice.currency)}
+          </span>
+          <span style={{ fontSize: 13, color: '#64748B' }}>{fmtDate(invoice.dueDate)}</span>
+        </div>
+        {/* Actions */}
+        <div style={{ display: 'flex', gap: 8 }}>
+          {invoice.status === 'ACTIVE' && (
+            <button
+              style={{
+                flex: 1, fontSize: 13, fontWeight: 600, borderRadius: 10, cursor: 'pointer',
+                background: '#ECFDF5', color: '#059669', border: '1px solid #A7F3D0',
+                padding: '10px 12px', minHeight: 44,
+              }}
+              onClick={() => setMarkPaidOpen(true)}
+              disabled={markPaidPending}
+            >
+              {markPaidPending ? '…' : 'Mark paid'}
+            </button>
+          )}
+          <Link
+            href={`/invoices/${invoice.id}`}
+            style={{
+              flex: 1, fontSize: 13, fontWeight: 600, borderRadius: 10,
+              background: '#F3F0FF', color: '#7C3AED', border: '1px solid #DDD6FE',
+              padding: '10px 12px', minHeight: 44, textDecoration: 'none',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}
+          >
+            View
+          </Link>
+        </div>
+      </div>
+
+      <Dialog open={markPaidOpen} onOpenChange={setMarkPaidOpen}>
+        <DialogContent showCloseButton={false}>
+          <DialogHeader>
+            <DialogTitle>Mark invoice as paid?</DialogTitle>
+            <DialogDescription>All remaining reminders will be cancelled.</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
+            <Button
+              className="bg-emerald-500 hover:bg-emerald-600 text-white border-transparent"
+              onClick={handleConfirmPaid}
+              disabled={markPaidPending}
+            >
+              {markPaidPending ? <Spinner size={14} /> : 'Confirm'}
             </Button>
           </DialogFooter>
         </DialogContent>

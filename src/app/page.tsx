@@ -5,11 +5,7 @@ function LogoIcon({ size = 32 }: { size?: number }) {
   return (
     <div
       className="rounded-xl flex items-center justify-center flex-shrink-0"
-      style={{
-        width: size,
-        height: size,
-        background: 'linear-gradient(135deg, #7C3AED, #EC4899)',
-      }}
+      style={{ width: size, height: size, background: 'linear-gradient(135deg, #7C3AED, #EC4899)' }}
     >
       <svg width={size * 0.44} height={size * 0.44} viewBox="0 0 14 14" fill="white">
         <path d="M7 0.5L13 5.5L7 13.5L1 5.5L7 0.5Z" />
@@ -24,7 +20,7 @@ export default async function HomePage() {
     <div className="min-h-screen" style={{ background: '#F8F7FF', color: '#1E1B4B' }}>
 
       {/* ── NAVBAR ─────────────────────────────────────────────── */}
-      <nav className="flex items-center justify-between px-8 py-5 max-w-7xl mx-auto">
+      <nav className="flex items-center justify-between px-4 sm:px-8 py-5 max-w-7xl mx-auto">
         <div className="flex items-center gap-2.5">
           <LogoIcon size={32} />
           <span className="text-lg font-bold" style={{ color: '#1E1B4B' }}>InvoiceNudge</span>
@@ -36,23 +32,23 @@ export default async function HomePage() {
           <a href="#pricing" className="text-sm font-medium" style={{ color: '#64748B' }}>Pricing</a>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           {userId ? (
             <Link
               href="/dashboard"
-              className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90"
+              className="inline-flex items-center justify-center px-4 py-2 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90"
               style={{ background: 'linear-gradient(135deg, #7C3AED, #6D28D9)' }}
             >
-              Go to dashboard
+              Dashboard
             </Link>
           ) : (
             <>
-              <Link href="/sign-in" className="text-sm font-medium" style={{ color: '#1E1B4B' }}>
+              <Link href="/sign-in" className="hidden sm:block text-sm font-medium" style={{ color: '#1E1B4B' }}>
                 Log in
               </Link>
               <Link
                 href="/sign-up"
-                className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                className="inline-flex items-center justify-center px-4 py-2 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90"
                 style={{ background: 'linear-gradient(135deg, #7C3AED, #6D28D9)' }}
               >
                 Try it Free
@@ -63,34 +59,32 @@ export default async function HomePage() {
       </nav>
 
       {/* ── HERO ────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden min-h-[580px] flex items-center">
-        {/* Gradient blob — right side */}
+      <section className="relative overflow-hidden min-h-[420px] lg:min-h-[580px] flex items-center">
         <div
           className="absolute top-0 right-0 pointer-events-none"
           style={{
-            width: '56%',
-            height: '100%',
+            width: '56%', height: '100%',
             background: 'linear-gradient(140deg, #7C3AED 0%, #9333EA 35%, #C026D3 65%, #EC4899 100%)',
             borderBottomLeftRadius: '44% 55%',
           }}
         />
 
-        <div className="relative z-10 max-w-7xl mx-auto px-8 py-16 w-full flex flex-col lg:flex-row items-center gap-16">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-8 py-12 lg:py-16 w-full flex flex-col lg:flex-row items-center gap-10 lg:gap-16">
           {/* Left — text */}
-          <div className="flex-1 max-w-lg">
+          <div className="w-full lg:flex-1 lg:max-w-lg">
             <div
               className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium mb-5"
               style={{ background: '#F3F0FF', color: '#7C3AED', border: '1px solid #DDD6FE' }}
             >
               Built for freelancers · Free to start
             </div>
-            <h1 className="text-5xl font-extrabold leading-tight mb-5" style={{ color: '#1E1B4B' }}>
+            <h1 className="text-3xl sm:text-5xl font-extrabold leading-tight mb-5" style={{ color: '#1E1B4B' }}>
               Get paid.{' '}
               <span style={{ color: '#7C3AED' }}>Skip the</span>
               <br />
               <span style={{ color: '#7C3AED' }}>awkward part.</span>
             </h1>
-            <p className="text-lg leading-relaxed mb-8" style={{ color: '#64748B' }}>
+            <p className="text-base sm:text-lg leading-relaxed mb-8" style={{ color: '#64748B' }}>
               InvoiceNudge automatically follows up on your unpaid invoices — so you never have to
               write another &ldquo;just following up…&rdquo; email again.
             </p>
@@ -99,8 +93,8 @@ export default async function HomePage() {
               {userId ? (
                 <Link
                   href="/dashboard"
-                  className="inline-flex items-center justify-center px-7 py-3.5 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90"
-                  style={{ background: '#4F46E5' }}
+                  className="flex items-center justify-center w-full sm:w-auto px-7 py-3.5 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                  style={{ background: '#4F46E5', minHeight: 44 }}
                 >
                   Go to dashboard
                 </Link>
@@ -108,15 +102,15 @@ export default async function HomePage() {
                 <>
                   <Link
                     href="/sign-up"
-                    className="inline-flex items-center justify-center px-7 py-3.5 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90"
-                    style={{ background: 'linear-gradient(135deg, #7C3AED, #6D28D9)' }}
+                    className="flex items-center justify-center w-full sm:w-auto px-7 py-3.5 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                    style={{ background: 'linear-gradient(135deg, #7C3AED, #6D28D9)', minHeight: 44 }}
                   >
                     Get Started Free
                   </Link>
                   <Link
                     href="/sign-in"
-                    className="inline-flex items-center justify-center px-7 py-3.5 rounded-xl text-sm font-semibold transition-colors hover:bg-white"
-                    style={{ border: '2px solid #7C3AED', color: '#7C3AED', background: 'transparent' }}
+                    className="flex items-center justify-center w-full sm:w-auto px-7 py-3.5 rounded-xl text-sm font-semibold transition-colors hover:bg-white"
+                    style={{ border: '2px solid #7C3AED', color: '#7C3AED', background: 'transparent', minHeight: 44 }}
                   >
                     Log in
                   </Link>
@@ -125,12 +119,10 @@ export default async function HomePage() {
             </div>
 
             {!userId && (
-              <div className="flex flex-col sm:flex-row sm:items-center gap-3 text-sm" style={{ color: '#64748B' }}>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-sm" style={{ color: '#64748B' }}>
                 <span>
                   Already using InvoiceNudge?{' '}
-                  <Link href="/sign-in" className="font-bold" style={{ color: '#7C3AED' }}>
-                    SIGN IN
-                  </Link>
+                  <Link href="/sign-in" className="font-bold" style={{ color: '#7C3AED' }}>SIGN IN</Link>
                 </span>
                 <span className="hidden sm:block" style={{ color: '#CBD5E1' }}>·</span>
                 <span>Free to start · No card required</span>
@@ -138,14 +130,13 @@ export default async function HomePage() {
             )}
           </div>
 
-          {/* Right — floating app preview card */}
-          <div className="flex-1 flex justify-center lg:justify-end">
+          {/* Right — app preview (desktop only) */}
+          <div className="hidden lg:flex flex-1 justify-center lg:justify-end">
             <div
               className="rounded-2xl overflow-hidden shadow-2xl"
               style={{ width: 420, background: 'white', border: '1px solid #E8E8F0' }}
             >
               <div className="flex" style={{ height: 300 }}>
-                {/* Sidebar */}
                 <div
                   className="flex flex-col py-4 px-3 gap-1"
                   style={{ width: 148, background: '#FAFAF8', borderRight: '1px solid #F1F0FF', flexShrink: 0 }}
@@ -168,8 +159,6 @@ export default async function HomePage() {
                     </div>
                   ))}
                 </div>
-
-                {/* Content */}
                 <div className="flex-1 p-4 overflow-hidden">
                   <p className="text-sm font-bold mb-3" style={{ color: '#1E1B4B' }}>Hello! Alex 👋</p>
                   <div className="flex gap-3 mb-4">
@@ -196,16 +185,12 @@ export default async function HomePage() {
                       <span className="text-xs font-medium" style={{ color: '#1E1B4B' }}>{name}</span>
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-semibold tabular-nums" style={{ color: '#1E1B4B' }}>{amount}</span>
-                        <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: c.bg, color: c.fg }}>
-                          {status}
-                        </span>
+                        <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: c.bg, color: c.fg }}>{status}</span>
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
-
-              {/* Bottom detail bar */}
               <div
                 className="px-5 py-3 flex items-center justify-between"
                 style={{ borderTop: '1px solid #F1F0FF', background: '#FAFAF8' }}
@@ -214,12 +199,7 @@ export default async function HomePage() {
                   <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: '#64748B' }}>Amount</p>
                   <p className="text-sm font-bold" style={{ color: '#1E1B4B' }}>$2,400.00</p>
                 </div>
-                <span
-                  className="text-xs font-semibold px-3 py-1 rounded-full"
-                  style={{ background: '#F3F0FF', color: '#7C3AED' }}
-                >
-                  ACTIVE
-                </span>
+                <span className="text-xs font-semibold px-3 py-1 rounded-full" style={{ background: '#F3F0FF', color: '#7C3AED' }}>ACTIVE</span>
                 <div className="text-right">
                   <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: '#64748B' }}>Client</p>
                   <p className="text-sm font-medium" style={{ color: '#1E1B4B' }}>Acme Corp</p>
@@ -231,9 +211,9 @@ export default async function HomePage() {
       </section>
 
       {/* ── WHY IT EXISTS ────────────────────────────────────────── */}
-      <section className="py-24 px-8" style={{ background: '#FFFFFF' }}>
+      <section className="py-16 md:py-24 px-4 sm:px-8" style={{ background: '#FFFFFF' }}>
         <div className="max-w-xl mx-auto text-center">
-          <h2 className="text-3xl font-bold mb-5" style={{ color: '#1E1B4B' }}>
+          <h2 className="text-2xl sm:text-3xl font-bold mb-5" style={{ color: '#1E1B4B' }}>
             Why InvoiceNudge exists
           </h2>
           <p className="text-base leading-relaxed" style={{ color: '#64748B' }}>
@@ -246,23 +226,22 @@ export default async function HomePage() {
       </section>
 
       {/* ── HOW IT WORKS ─────────────────────────────────────────── */}
-      <section id="how-it-works" className="py-24 px-8" style={{ background: '#F8F7FF' }}>
+      <section id="how-it-works" className="py-16 md:py-24 px-4 sm:px-8" style={{ background: '#F8F7FF' }}>
         <div className="max-w-5xl mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-3" style={{ color: '#1E1B4B' }}>
+          <h2 className="text-2xl sm:text-3xl font-bold text-center mb-3" style={{ color: '#1E1B4B' }}>
             Here&rsquo;s exactly what happens
           </h2>
-          <p className="text-center mb-14 text-base" style={{ color: '#64748B' }}>
+          <p className="text-center mb-12 text-base" style={{ color: '#64748B' }}>
             No surprises. You&rsquo;re always in control.
           </p>
 
           <div className="relative max-w-2xl mx-auto">
-            {/* Vertical connecting line */}
             <div
-              className="absolute top-10 bottom-10"
+              className="absolute top-10 bottom-10 hidden sm:block"
               style={{ left: '1.875rem', width: '2px', background: '#E8E8F0' }}
             />
 
-            <div className="space-y-8">
+            <div className="space-y-6">
               {[
                 {
                   n: '01',
@@ -285,24 +264,18 @@ export default async function HomePage() {
                   body: '4 reminders on a smart schedule: Day +1, +5, +10, +20 after the due date. Tone escalates gradually — warm first, firm last. Signed with your name. Feels like you wrote it.',
                 },
               ].map(({ n, title, body }) => (
-                <div key={n} className="relative flex gap-6 pl-16">
-                  {/* Step circle */}
-                  <div
-                    className="absolute left-0 w-15 flex items-center justify-center"
-                    style={{ zIndex: 1 }}
-                  >
-                    <span
-                      className="text-4xl font-black select-none"
-                      style={{ color: '#E8E8F0', lineHeight: 1 }}
-                    >
-                      {n}
-                    </span>
+                <div key={n} className="relative flex gap-4 sm:gap-6 sm:pl-16">
+                  <div className="hidden sm:flex absolute left-0 w-15 items-center justify-center" style={{ zIndex: 1 }}>
+                    <span className="text-4xl font-black select-none" style={{ color: '#E8E8F0', lineHeight: 1 }}>{n}</span>
                   </div>
                   <div
-                    className="flex-1 rounded-2xl p-6 relative overflow-hidden"
+                    className="flex-1 rounded-2xl p-5 sm:p-6 relative overflow-hidden"
                     style={{ border: '1px solid #E8E8F0', background: '#FFFFFF', boxShadow: '0 2px 16px rgba(124,58,237,0.06)' }}
                   >
-                    <h3 className="text-base font-bold mb-2" style={{ color: '#1E1B4B' }}>{title}</h3>
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-xs font-bold text-[#7C3AED] sm:hidden">{n}</span>
+                      <h3 className="text-base font-bold" style={{ color: '#1E1B4B' }}>{title}</h3>
+                    </div>
                     <p className="text-sm leading-relaxed" style={{ color: '#64748B' }}>{body}</p>
                   </div>
                 </div>
@@ -313,12 +286,12 @@ export default async function HomePage() {
       </section>
 
       {/* ── OBJECTION BUSTERS ────────────────────────────────────── */}
-      <section className="py-24 px-8" style={{ background: '#FFFFFF' }}>
+      <section className="py-16 md:py-24 px-4 sm:px-8" style={{ background: '#FFFFFF' }}>
         <div className="max-w-5xl mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-14" style={{ color: '#1E1B4B' }}>
+          <h2 className="text-2xl sm:text-3xl font-bold text-center mb-10 sm:mb-14" style={{ color: '#1E1B4B' }}>
             Your concerns, answered
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 sm:gap-6">
             {[
               {
                 q: 'Will it make me look pushy?',
@@ -335,7 +308,7 @@ export default async function HomePage() {
             ].map(({ q, a }) => (
               <div
                 key={q}
-                className="rounded-2xl p-8"
+                className="rounded-2xl p-6 sm:p-8"
                 style={{ border: '1px solid #E8E8F0', boxShadow: '0 2px 16px rgba(124,58,237,0.06)' }}
               >
                 <h3 className="text-base font-bold mb-3" style={{ color: '#1E1B4B' }}>{q}</h3>
@@ -347,29 +320,24 @@ export default async function HomePage() {
       </section>
 
       {/* ── REMINDER SCHEDULE ────────────────────────────────────── */}
-      <section className="py-24 px-8" style={{ background: '#F8F7FF' }}>
+      <section className="py-16 md:py-24 px-4 sm:px-8" style={{ background: '#F8F7FF' }}>
         <div className="max-w-5xl mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-3" style={{ color: '#1E1B4B' }}>
+          <h2 className="text-2xl sm:text-3xl font-bold text-center mb-3" style={{ color: '#1E1B4B' }}>
             The reminder schedule
           </h2>
-          <p className="text-center mb-14 text-base" style={{ color: '#64748B' }}>
+          <p className="text-center mb-12 text-base" style={{ color: '#64748B' }}>
             Professional, escalating, automatic.
           </p>
 
           <div className="relative max-w-lg mx-auto">
-            {/* Vertical line */}
             <div
               className="absolute top-4 bottom-4"
               style={{ left: '0.9375rem', width: '2px', background: '#E8E8F0' }}
             />
 
-            <div className="space-y-6">
-              {/* Due date marker */}
-              <div className="flex items-center gap-5">
-                <div
-                  className="w-8 h-8 rounded-full flex-shrink-0"
-                  style={{ background: '#E8E8F0', border: '2px solid #CBD5E1', zIndex: 1 }}
-                />
+            <div className="space-y-5 sm:space-y-6">
+              <div className="flex items-center gap-4 sm:gap-5">
+                <div className="w-8 h-8 rounded-full flex-shrink-0" style={{ background: '#E8E8F0', border: '2px solid #CBD5E1', zIndex: 1 }} />
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: '#94A3B8' }}>Due date</p>
                   <p className="text-sm font-medium" style={{ color: '#1E1B4B' }}>Invoice due</p>
@@ -377,49 +345,22 @@ export default async function HomePage() {
               </div>
 
               {[
-                {
-                  day: 'Day +1',
-                  label: 'Reminder 1',
-                  desc: 'Warm and friendly check-in',
-                  tone: 'Warm',
-                  badge: { bg: '#D1FAE5', fg: '#065F46' },
-                },
-                {
-                  day: 'Day +5',
-                  label: 'Reminder 2',
-                  desc: 'Neutral follow-up with amount',
-                  tone: 'Neutral',
-                  badge: { bg: '#DBEAFE', fg: '#1E40AF' },
-                },
-                {
-                  day: 'Day +10',
-                  label: 'Reminder 3',
-                  desc: 'Firm but professional',
-                  tone: 'Firm',
-                  badge: { bg: '#FEF3C7', fg: '#92400E' },
-                },
-                {
-                  day: 'Day +20',
-                  label: 'Reminder 4',
-                  desc: 'Final notice',
-                  tone: 'Final',
-                  badge: { bg: '#FEE2E2', fg: '#991B1B' },
-                },
+                { day: 'Day +1', label: 'Reminder 1', desc: 'Warm and friendly check-in', tone: 'Warm', badge: { bg: '#D1FAE5', fg: '#065F46' } },
+                { day: 'Day +5', label: 'Reminder 2', desc: 'Neutral follow-up with amount', tone: 'Neutral', badge: { bg: '#DBEAFE', fg: '#1E40AF' } },
+                { day: 'Day +10', label: 'Reminder 3', desc: 'Firm but professional', tone: 'Firm', badge: { bg: '#FEF3C7', fg: '#92400E' } },
+                { day: 'Day +20', label: 'Reminder 4', desc: 'Final notice', tone: 'Final', badge: { bg: '#FEE2E2', fg: '#991B1B' } },
               ].map(({ day, label, desc, tone, badge }) => (
-                <div key={day} className="flex items-center gap-5">
+                <div key={day} className="flex items-center gap-4 sm:gap-5">
+                  <div className="w-8 h-8 rounded-full flex-shrink-0" style={{ background: '#7C3AED', border: '3px solid #F3F0FF', zIndex: 1 }} />
                   <div
-                    className="w-8 h-8 rounded-full flex-shrink-0"
-                    style={{ background: '#7C3AED', border: '3px solid #F3F0FF', zIndex: 1 }}
-                  />
-                  <div
-                    className="flex-1 flex items-center justify-between gap-4 rounded-2xl px-5 py-4"
+                    className="flex-1 flex items-center justify-between gap-3 rounded-2xl px-3 sm:px-5 py-3 sm:py-4"
                     style={{ border: '1px solid #E8E8F0', background: '#FFFFFF', boxShadow: '0 2px 16px rgba(124,58,237,0.06)' }}
                   >
-                    <div>
+                    <div className="min-w-0">
                       <p className="text-xs font-semibold font-mono" style={{ color: '#7C3AED' }}>{day}</p>
                       <p className="text-sm font-medium" style={{ color: '#1E1B4B' }}>
                         {label}:{' '}
-                        <span style={{ color: '#64748B', fontWeight: 400 }}>{desc}</span>
+                        <span className="hidden sm:inline" style={{ color: '#64748B', fontWeight: 400 }}>{desc}</span>
                       </p>
                     </div>
                     <span
@@ -437,18 +378,19 @@ export default async function HomePage() {
       </section>
 
       {/* ── PRICING ──────────────────────────────────────────────── */}
-      <section id="pricing" className="py-24 px-8" style={{ background: '#FFFFFF' }}>
+      <section id="pricing" className="py-16 md:py-24 px-4 sm:px-8" style={{ background: '#FFFFFF' }}>
         <div className="max-w-2xl mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-3" style={{ color: '#1E1B4B' }}>
+          <h2 className="text-2xl sm:text-3xl font-bold text-center mb-3" style={{ color: '#1E1B4B' }}>
             Simple pricing
           </h2>
-          <p className="text-center mb-14 text-base" style={{ color: '#64748B' }}>
+          <p className="text-center mb-12 text-base" style={{ color: '#64748B' }}>
             Start free. Upgrade when you&rsquo;re ready.
           </p>
-          <div className="flex flex-col sm:flex-row gap-6">
+          {/* On mobile: flex-col with Pro first (order-1). On sm+: flex-row with Free left (sm:order-1) */}
+          <div className="flex flex-col sm:flex-row gap-5 sm:gap-6">
             {/* Free */}
             <div
-              className="flex-1 rounded-2xl p-8 flex flex-col"
+              className="flex-1 rounded-2xl p-6 sm:p-8 flex flex-col order-2 sm:order-1"
               style={{ border: '1px solid #E8E8F0', background: '#FFFFFF' }}
             >
               <p className="text-sm font-semibold mb-2" style={{ color: '#64748B' }}>Free</p>
@@ -470,19 +412,18 @@ export default async function HomePage() {
               </ul>
               <Link
                 href="/sign-up"
-                className="mt-8 inline-flex items-center justify-center rounded-xl py-3 font-semibold text-sm transition-colors hover:bg-purple-50"
+                className="mt-8 flex items-center justify-center rounded-xl py-3 font-semibold text-sm transition-colors hover:bg-purple-50 min-h-[44px]"
                 style={{ border: '2px solid #7C3AED', color: '#7C3AED' }}
               >
                 Start free
               </Link>
             </div>
 
-            {/* Pro */}
+            {/* Pro — first on mobile */}
             <div
-              className="flex-1 rounded-2xl p-8 flex flex-col text-white relative overflow-hidden"
+              className="flex-1 rounded-2xl p-6 sm:p-8 flex flex-col text-white relative overflow-hidden order-1 sm:order-2"
               style={{ background: 'linear-gradient(135deg, #7C3AED, #6D28D9)' }}
             >
-              {/* Most popular badge */}
               <div
                 className="absolute top-4 right-4 text-xs font-semibold px-2.5 py-1 rounded-full"
                 style={{ background: 'rgba(255,255,255,0.2)', color: 'white' }}
@@ -507,7 +448,7 @@ export default async function HomePage() {
               </ul>
               <Link
                 href="/sign-up"
-                className="mt-8 inline-flex items-center justify-center rounded-xl py-3 font-semibold text-sm bg-white transition-opacity hover:opacity-90"
+                className="mt-8 flex items-center justify-center rounded-xl py-3 font-semibold text-sm bg-white transition-opacity hover:opacity-90 min-h-[44px]"
                 style={{ color: '#7C3AED' }}
               >
                 Get Pro
@@ -518,7 +459,7 @@ export default async function HomePage() {
       </section>
 
       {/* ── FOOTER ────────────────────────────────────────────────── */}
-      <footer className="px-8 py-8" style={{ borderTop: '1px solid #E8E8F0', background: '#FFFFFF' }}>
+      <footer className="px-4 sm:px-8 py-6 sm:py-8" style={{ borderTop: '1px solid #E8E8F0', background: '#FFFFFF' }}>
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-sm" style={{ color: '#64748B' }}>
           <div className="flex items-center gap-2.5">
             <LogoIcon size={24} />

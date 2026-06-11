@@ -81,6 +81,7 @@ export default function InvoicePreviewPage({ params }: { params: Promise<{ id: s
     amount: fmtAmount(invoice.amount, invoice.currency),
     dueDate: fmtDate(invoice.dueDate),
     cancelUrl: '[cancel link]',
+    freelancerName: '[Your name]',
   })
 
   return (
@@ -100,23 +101,24 @@ export default function InvoicePreviewPage({ params }: { params: Promise<{ id: s
       />
 
       <div className="space-y-3">
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           <button
-            className="inline-flex items-center justify-center rounded-lg bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white font-medium px-5 py-2.5 text-sm shadow-sm transition-colors"
+            className="flex items-center justify-center rounded-lg bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white font-medium px-5 py-2.5 text-sm shadow-sm transition-colors w-full sm:w-auto"
+            style={{ minHeight: 44 }}
             onClick={handleActivate}
             disabled={activating || cancelling}
           >
             {activating ? 'Activating…' : 'Activate reminders'}
           </button>
           <button
-            className="inline-flex items-center justify-center rounded-lg font-medium px-5 py-2.5 text-sm transition-colors disabled:opacity-60"
-            style={{ border: '1px solid #E8E4DC', color: '#1C1917', background: 'transparent' }}
+            className="flex items-center justify-center rounded-lg font-medium px-5 py-2.5 text-sm transition-colors disabled:opacity-60 w-full sm:w-auto"
+            style={{ border: '1px solid #E8E4DC', color: '#1C1917', background: 'transparent', minHeight: 44 }}
             onClick={handleEdit}
             disabled={activating || cancelling}
           >
             {cancelling ? 'Cancelling…' : 'Edit details'}
           </button>
-          <Link href="/dashboard" className="text-sm ml-1 hover:underline" style={{ color: '#78716C' }}>
+          <Link href="/dashboard" className="text-sm text-center sm:text-left sm:ml-1 hover:underline py-2" style={{ color: '#78716C' }}>
             Cancel
           </Link>
         </div>
