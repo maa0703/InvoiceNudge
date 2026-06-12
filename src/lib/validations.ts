@@ -12,6 +12,7 @@ export const createInvoiceSchema = z.object({
 export const updateUserSchema = z.object({
   displayName: z.string().min(1).max(80).optional(),
   replyToEmail: z.string().email().optional(),
+  emailSignatureName: z.string().max(80).optional(),
 })
 
 export const checkinCancelSchema = z.object({
@@ -19,3 +20,6 @@ export const checkinCancelSchema = z.object({
 })
 
 export type CreateInvoiceInput = z.infer<typeof createInvoiceSchema>
+
+export const updateDraftInvoiceSchema = createInvoiceSchema
+export type UpdateDraftInvoiceInput = z.infer<typeof updateDraftInvoiceSchema>

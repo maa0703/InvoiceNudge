@@ -4,10 +4,18 @@ import useSWR from 'swr'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { InvoiceRow, type InvoiceRowData } from '@/components/invoice-row'
+import { useLang } from '@/lib/lang-context'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
+const T = {
+  en: { toastPaid: 'Invoice marked as paid.', toastDeleted: 'Invoice deleted.' },
+  fr: { toastPaid: 'Facture marquée comme payée.', toastDeleted: 'Facture supprimée.' },
+} as const
+
 export function DashboardContent({ plan: _propPlan }: { plan?: string }) {
+  const { lang } = useLang()
+  const t = T[lang]
   const { data, isLoading, mutate } = useSWR('/api/v1/invoices', fetcher, { refreshInterval: 30000 })
   const { data: meData } = useSWR('/api/v1/users/me', fetcher)
 
@@ -25,7 +33,7 @@ export function DashboardContent({ plan: _propPlan }: { plan?: string }) {
         return
       }
       await mutate()
-      toast.success('Invoice marked as paid.')
+      toast(t.toastPaid, { style: { background: '#7C3AED', color: '#FFFFFF' } })
     } catch {
       toast.error('Something went wrong.')
     }
@@ -39,7 +47,7 @@ export function DashboardContent({ plan: _propPlan }: { plan?: string }) {
         return
       }
       await mutate()
-      toast.success('Invoice deleted.')
+      toast(t.toastDeleted, { style: { background: '#7C3AED', color: '#FFFFFF' } })
     } catch {
       toast.error('Something went wrong.')
     }

@@ -20,6 +20,9 @@ const T = {
     emptyFiltered: (tab: Tab) => `No ${tab.toLowerCase()} invoices`,
     emptyDesc: 'Try a different filter.',
     addFirst: 'Add your first invoice',
+    toastPaid: 'Invoice marked as paid.',
+    toastCancelled: 'Invoice cancelled.',
+    toastDeleted: 'Invoice deleted.',
   },
   fr: {
     title: 'Factures', addInvoice: 'Ajouter une facture',
@@ -30,6 +33,9 @@ const T = {
     emptyFiltered: (tab: Tab) => `Aucune facture ${({ All: '', Active: 'active', Paid: 'payée', Overdue: 'en retard', Cancelled: 'annulée' } as Record<Tab, string>)[tab]}`,
     emptyDesc: 'Essayez un autre filtre.',
     addFirst: 'Ajouter votre première facture',
+    toastPaid: 'Facture marquée comme payée.',
+    toastCancelled: 'Facture annulée.',
+    toastDeleted: 'Facture supprimée.',
   },
 } as const
 
@@ -72,21 +78,21 @@ export default function InvoicesPage() {
     const res = await fetch(`/api/v1/invoices/${id}/paid`, { method: 'PATCH' })
     if (!res.ok) { await mutate(); toast.error('Could not mark as paid.'); return }
     await mutate()
-    toast.success('Invoice marked as paid.')
+    toast(s.toastPaid, { style: { background: '#7C3AED', color: '#FFFFFF' } })
   }
 
   async function handleCancel(id: string) {
     const res = await fetch(`/api/v1/invoices/${id}/cancel`, { method: 'PATCH' })
     if (!res.ok) { toast.error('Could not cancel invoice.'); return }
     await mutate()
-    toast.success('Invoice cancelled.')
+    toast(s.toastCancelled, { style: { background: '#7C3AED', color: '#FFFFFF' } })
   }
 
   async function handleDelete(id: string) {
     const res = await fetch(`/api/v1/invoices/${id}`, { method: 'DELETE' })
     if (!res.ok) { toast.error('Could not delete invoice.'); return }
     await mutate()
-    toast.success('Invoice deleted.')
+    toast(s.toastDeleted, { style: { background: '#7C3AED', color: '#FFFFFF' } })
   }
 
   return (

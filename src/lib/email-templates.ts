@@ -1,15 +1,17 @@
 export type ReminderTemplateVars = {
   clientName: string
+  displayName: string
+  signatureName: string
   invoiceRef: string
   amount: string
   dueDate: string
   cancelUrl: string
-  freelancerName: string
 }
 
 type EmailTemplate = { subject: string; text: string; html: string }
 
 export function reminder1(v: ReminderTemplateVars): EmailTemplate {
+  const name = v.signatureName || v.displayName || 'Your freelancer'
   return {
     subject: `Quick note about invoice ${v.invoiceRef}`,
     text: [
@@ -20,16 +22,17 @@ export function reminder1(v: ReminderTemplateVars): EmailTemplate {
       `If you've already sent payment, please disregard this. Otherwise, we'd appreciate settlement at your earliest convenience.`,
       ``,
       `Thanks,`,
-      `${v.freelancerName}`,
+      `${name}`,
     ].join('\n'),
     html: `<p>Hi ${v.clientName},</p>
 <p>Just a quick note — invoice <strong>${v.invoiceRef}</strong> for <strong>${v.amount}</strong> was due on ${v.dueDate}.</p>
 <p>If you've already sent payment, please disregard this. Otherwise, we'd appreciate settlement at your earliest convenience.</p>
-<p>Thanks,<br>${v.freelancerName}</p>`,
+<p>Thanks,<br>${name}</p>`,
   }
 }
 
 export function reminder2(v: ReminderTemplateVars): EmailTemplate {
+  const name = v.signatureName || v.displayName || 'Your freelancer'
   return {
     subject: `Second reminder — invoice ${v.invoiceRef}`,
     text: [
@@ -40,16 +43,17 @@ export function reminder2(v: ReminderTemplateVars): EmailTemplate {
       `Please arrange payment as soon as possible. If there's an issue, feel free to reach out.`,
       ``,
       `Thanks,`,
-      `${v.freelancerName}`,
+      `${name}`,
     ].join('\n'),
     html: `<p>Hi ${v.clientName},</p>
 <p>This is a second reminder that invoice <strong>${v.invoiceRef}</strong> for <strong>${v.amount}</strong> (due ${v.dueDate}) is still outstanding.</p>
 <p>Please arrange payment as soon as possible. If there's an issue, feel free to reach out.</p>
-<p>Thanks,<br>${v.freelancerName}</p>`,
+<p>Thanks,<br>${name}</p>`,
   }
 }
 
 export function reminder3(v: ReminderTemplateVars): EmailTemplate {
+  const name = v.signatureName || v.displayName || 'Your freelancer'
   return {
     subject: `Third reminder — invoice ${v.invoiceRef} is overdue`,
     text: [
@@ -60,16 +64,17 @@ export function reminder3(v: ReminderTemplateVars): EmailTemplate {
       `Please make payment immediately. If you have questions, please get in touch.`,
       ``,
       `Thanks,`,
-      `${v.freelancerName}`,
+      `${name}`,
     ].join('\n'),
     html: `<p>Hi ${v.clientName},</p>
 <p>This is our third reminder that invoice <strong>${v.invoiceRef}</strong> for <strong>${v.amount}</strong> (due ${v.dueDate}) remains unpaid.</p>
 <p>Please make payment immediately. If you have questions, please get in touch.</p>
-<p>Thanks,<br>${v.freelancerName}</p>`,
+<p>Thanks,<br>${name}</p>`,
   }
 }
 
 export function reminder4(v: ReminderTemplateVars): EmailTemplate {
+  const name = v.signatureName || v.displayName || 'Your freelancer'
   return {
     subject: `Final notice — invoice ${v.invoiceRef}`,
     text: [
@@ -80,12 +85,12 @@ export function reminder4(v: ReminderTemplateVars): EmailTemplate {
       `Please arrange payment at your earliest opportunity. If you have questions or need to discuss, please reply to this email.`,
       ``,
       `Thank you,`,
-      `${v.freelancerName}`,
+      `${name}`,
     ].join('\n'),
     html: `<p>Hi ${v.clientName},</p>
 <p>This is our final notice regarding invoice <strong>${v.invoiceRef}</strong> for <strong>${v.amount}</strong>, due on ${v.dueDate}.</p>
 <p>Please arrange payment at your earliest opportunity. If you have questions or need to discuss, please reply to this email.</p>
-<p>Thank you,<br>${v.freelancerName}</p>`,
+<p>Thank you,<br>${name}</p>`,
   }
 }
 

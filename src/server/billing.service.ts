@@ -32,7 +32,7 @@ export async function createCheckout(
     customer: customerId,
     mode: 'subscription',
     line_items: [{ price: process.env.STRIPE_PRO_PRICE_ID!, quantity: 1 }],
-    success_url: `${baseUrl}/dashboard?upgraded=true`,
+    success_url: `${baseUrl}/dashboard?activated=true`,
     cancel_url: `${baseUrl}/settings`,
   })
 
@@ -40,7 +40,7 @@ export async function createCheckout(
 }
 
 export async function cancelSubscription(
-  _userId: string,
+  userId: string,
   stripeSubscriptionId: string | null,
 ) {
   if (!stripeSubscriptionId) {
@@ -53,5 +53,40 @@ export async function cancelSubscription(
 
   // In Stripe API 2024-06-20+, current_period_end moved to SubscriptionItem
   const accessUntil = subscription.items.data[0]?.current_period_end ?? 0
+
+  await db.user.update({
+    where: { id: userId },
+    data: { subscriptionCancelledAt: new Date() },
+  })
+
   return { accessUntil }
+}
+
+export async function reactivateSubscription(
+  userId: string,
+  stripeSubscriptionId: string | null,
+) {
+  if (!stripeSubscriptionId) {
+    throw new BillingError('NO_SUBSCRIPTION', 'No cancellation to revert.')
+  }
+
+  await stripe.subscriptions.update(stripeSubscriptionId, {
+    cancel_at_period_end: false,
+  })
+
+  await db.user.update({
+    where: { id: userId },
+    data: { subscriptionCancelledAt: null },
+  })
+
+  return { reactivated: true }
+}
+
+export async function getSubscriptionPeriodEnd(stripeSubscriptionId: string): Promise<number | null> {
+  try {
+    const sub = await stripe.subscriptions.retrieve(stripeSubscriptionId)
+    return sub.items.data[0]?.current_period_end ?? null
+  } catch {
+    return null
+  }
 }

@@ -12,22 +12,23 @@ export async function POST(_req: NextRequest) {
   try {
     user = await getCurrentUser()
   } catch (error) {
-    console.error('[POST /api/v1/billing/cancel] getCurrentUser failed', error)
+    console.error('[POST /api/v1/billing/reactivate] getCurrentUser failed', error)
     return NextResponse.json({ error: 'INTERNAL_ERROR' }, { status: 500 })
   }
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
+  if (user.plan !== 'PRO' || !user.subscriptionCancelledAt) {
+    return NextResponse.json({ error: 'No cancellation to revert.' }, { status: 409 })
+  }
+
   try {
-    const result = await billingService.cancelSubscription(
-      user.id,
-      user.stripeSubscriptionId,
-    )
-    return NextResponse.json({ cancelled: true, accessUntil: result.accessUntil })
+    const result = await billingService.reactivateSubscription(user.id, user.stripeSubscriptionId)
+    return NextResponse.json(result)
   } catch (error) {
-    if (error instanceof BillingError && error.code === 'NO_SUBSCRIPTION') {
+    if (error instanceof BillingError) {
       return NextResponse.json({ error: error.message }, { status: 409 })
     }
-    console.error('[POST /api/v1/billing/cancel]', error)
+    console.error('[POST /api/v1/billing/reactivate]', error)
     return NextResponse.json({ error: 'INTERNAL_ERROR' }, { status: 500 })
   }
 }

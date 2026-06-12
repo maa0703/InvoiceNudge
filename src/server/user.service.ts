@@ -6,7 +6,7 @@ export async function getUser(userId: string) {
 
 export async function updateUser(
   userId: string,
-  data: { displayName?: string; replyToEmail?: string },
+  data: { displayName?: string; replyToEmail?: string; emailSignatureName?: string },
 ) {
   return db.user.update({
     where: { id: userId },

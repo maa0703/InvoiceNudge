@@ -96,6 +96,24 @@ export async function updateStatus(
   })
 }
 
+export async function updateDraft(
+  userId: string,
+  invoiceId: string,
+  clientId: string,
+  data: { amount: number; currency: 'USD' | 'EUR' | 'GBP'; dueDate: Date; invoiceRef?: string },
+): Promise<Invoice> {
+  return db.invoice.update({
+    where: { id: invoiceId, userId },
+    data: {
+      clientId,
+      amount: data.amount,
+      currency: data.currency,
+      dueDate: data.dueDate,
+      invoiceRef: data.invoiceRef ?? null,
+    },
+  })
+}
+
 export async function softDelete(userId: string, invoiceId: string): Promise<void> {
   await db.invoice.update({
     where: { id: invoiceId, userId },

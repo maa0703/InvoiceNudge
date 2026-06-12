@@ -71,11 +71,8 @@ function SidebarContent({ isPro, isExpanded, onNavClick }: { isPro: boolean; isE
   }
   const textStyle = isExpanded ? textShow : textHide
 
-  // Padding shifts items to stay visually centered as width changes.
-  // Collapsed: sidebar has no horizontal padding, items use 24px padding to center 16px icon in 64px.
-  // Expanded:  sidebar has 16px padding, items use 16px padding for the standard inset.
-  const itemPad = isExpanded ? '10px 16px' : '10px 24px'
-  const itemTransition = 'padding 200ms ease-in-out, background 150ms ease, color 150ms ease'
+  const itemPad = '10px 8px'
+  const itemTransition = 'background 150ms ease, color 150ms ease'
 
   return (
     <>
@@ -199,14 +196,14 @@ export function AppShell({ isPro, children }: { isPro: boolean; children: React.
             flexDirection: 'column',
             // Horizontal padding transitions in sync with width:
             // expanded=16px, collapsed=0px so items can use their own padding for centering
-            padding: isExpanded ? '24px 16px' : '24px 0',
+            padding: '24px 16px',
             position: 'sticky',
             top: 0,
             height: '100vh',
             background: '#FFFFFF',
             borderRight: '1px solid #F0EEFF',
             overflow: 'hidden',
-            transition: 'width 200ms ease-in-out, padding 200ms ease-in-out',
+            transition: 'width 200ms ease-in-out',
           }}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}

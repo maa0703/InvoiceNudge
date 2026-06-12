@@ -4,7 +4,7 @@ import { db } from '@/lib/db'
 import * as invoiceRepo from '@/server/invoice.repo'
 import * as clientRepo from '@/server/client.repo'
 import * as reminderRepo from '@/server/reminder.repo'
-import type { CreateInvoiceInput } from '@/lib/validations'
+import type { CreateInvoiceInput, UpdateDraftInvoiceInput } from '@/lib/validations'
 
 export class ServiceError extends Error {
   constructor(
@@ -119,6 +119,33 @@ export async function cancelInvoice(userId: string, invoiceId: string) {
   const cancelledCount = await reminderRepo.cancelByInvoice(invoiceId, 'manual')
   await invoiceRepo.updateStatus(userId, invoiceId, InvoiceStatus.CANCELLED)
   return { cancelledCount }
+}
+
+export async function updateDraftInvoice(
+  userId: string,
+  invoiceId: string,
+  data: UpdateDraftInvoiceInput,
+) {
+  const invoice = await invoiceRepo.findById(userId, invoiceId)
+  if (!invoice) throw new ServiceError('NOT_FOUND', 'Invoice not found.')
+  if (invoice.status !== InvoiceStatus.DRAFT) {
+    throw new ServiceError('NOT_DRAFT', 'Only draft invoices can be edited.')
+  }
+
+  if (data.invoiceRef && data.invoiceRef !== invoice.invoiceRef) {
+    const duplicate = await invoiceRepo.findByRef(userId, data.invoiceRef)
+    if (duplicate && duplicate.id !== invoiceId) {
+      throw new ServiceError('DUPLICATE_REF', 'An invoice with this reference already exists.')
+    }
+  }
+
+  const client = await clientRepo.upsertByEmail(userId, data.clientEmail, data.clientName)
+  return invoiceRepo.updateDraft(userId, invoiceId, client.id, {
+    amount: data.amount,
+    currency: data.currency,
+    dueDate: new Date(data.dueDate),
+    invoiceRef: data.invoiceRef,
+  })
 }
 
 export async function deleteInvoice(userId: string, invoiceId: string) {

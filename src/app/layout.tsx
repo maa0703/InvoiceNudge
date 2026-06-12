@@ -23,6 +23,7 @@ export default function RootLayout({
     <ClerkProvider
       signInFallbackRedirectUrl="/dashboard"
       signUpForceRedirectUrl="/invoices/new"
+      afterSignOutUrl="/"
     >
       <html lang="en" className="scroll-smooth">
         <body className={`${inter.className} antialiased`}>

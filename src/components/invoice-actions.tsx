@@ -4,12 +4,20 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
+import { useLang } from '@/lib/lang-context'
+
+const T = {
+  en: { toastDeleted: 'Invoice deleted' },
+  fr: { toastDeleted: 'Facture supprimée' },
+} as const
 
 interface Props {
   invoiceId: string
 }
 
 export function InvoiceActions({ invoiceId }: Props) {
+  const { lang } = useLang()
+  const t = T[lang]
   const [confirming, setConfirming] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const router = useRouter()
@@ -19,7 +27,7 @@ export function InvoiceActions({ invoiceId }: Props) {
     try {
       const res = await fetch(`/api/v1/invoices/${invoiceId}`, { method: 'DELETE' })
       if (!res.ok) throw new Error('Failed')
-      toast.success('Invoice deleted')
+      toast(t.toastDeleted, { style: { background: '#7C3AED', color: '#FFFFFF' } })
       router.refresh()
     } catch {
       toast.error('Could not delete invoice')

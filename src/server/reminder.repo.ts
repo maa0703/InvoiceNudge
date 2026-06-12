@@ -19,7 +19,7 @@ export type ReminderWithInvoiceAndUser = Prisma.ReminderGetPayload<{
         client: { select: { name: true; email: true } }
       }
     }
-    user: { select: { displayName: true; replyToEmail: true } }
+    user: { select: { displayName: true; emailSignatureName: true; replyToEmail: true } }
   }
 }>
 
@@ -54,7 +54,7 @@ const dueInclude = {
       client: { select: { name: true, email: true } },
     },
   },
-  user: { select: { displayName: true, replyToEmail: true } },
+  user: { select: { displayName: true, emailSignatureName: true, replyToEmail: true } },
 } satisfies Prisma.ReminderInclude
 
 export async function findDueCheckins(): Promise<ReminderWithInvoiceAndUser[]> {

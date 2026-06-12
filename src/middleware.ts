@@ -1,17 +1,27 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
+import { NextResponse } from 'next/server'
 
 const isPublicRoute = createRouteMatcher([
   '/',
   '/sign-in(.*)',
   '/sign-up(.*)',
-  '/api/v1/(.*)',       // API routes handle auth themselves → return JSON 401, not a redirect
-  '/api/webhooks/(.*)',
   '/reminders/cancel(.*)',
+  '/api/webhooks/(.*)',
+  '/api/v1/cron/(.*)',
+  '/api/v1/reminders/(.*)/checkin-cancel',
 ])
 
-export default clerkMiddleware(async (auth, req) => {
-  if (!isPublicRoute(req)) {
-    await auth.protect()
+export default clerkMiddleware(async (auth, request) => {
+  if (!isPublicRoute(request)) {
+    const { userId } = await auth()
+    if (!userId) {
+      if (request.nextUrl.pathname.startsWith('/api/')) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      }
+      const signInUrl = new URL('/sign-in', request.url)
+      signInUrl.searchParams.set('redirect_url', request.url)
+      return NextResponse.redirect(signInUrl)
+    }
   }
 })
 

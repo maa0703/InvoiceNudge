@@ -1,8 +1,9 @@
 'use client'
 
-import { use, useState } from 'react'
+import { use, useEffect, useState } from 'react'
 import useSWR from 'swr'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { ReminderTimeline } from '@/components/reminder-timeline'
 import {
@@ -15,24 +16,28 @@ import { useLang } from '@/lib/lang-context'
 
 const T = {
   en: {
-    back: 'Dashboard', due: 'Due', reminderSchedule: 'Reminder schedule',
-    markPaid: 'Mark paid', cancelSeq: 'Cancel sequence', cancelling: 'Cancelling…',
+    back: 'Invoices', due: 'Due', reminderSchedule: 'Reminder schedule',
+    markPaid: 'Mark paid', cancelSeq: 'Cancel sequence', cancelling: 'Cancelling…', keepIt: 'Keep it',
     exhaustedNote: 'All 4 reminders have been sent. No further action will be taken automatically.',
     confirmPaidTitle: 'Mark invoice as paid?', confirmPaidDesc: 'All remaining reminders will be cancelled.',
     confirm: 'Confirm', cancel: 'Cancel',
     cancelTitle: 'Cancel reminder sequence?', cancelDesc: 'All scheduled reminders will be stopped.',
     notFound: 'Invoice not found.', backToDash: 'Back to dashboard',
     statusLabels: { DRAFT: 'Draft', ACTIVE: 'Active', PAID: 'Paid', CANCELLED: 'Cancelled', EXHAUSTED: 'All reminders sent', FAILED: 'Failed' },
+    toastPaid: 'Invoice marked as paid.',
+    toastCancelled: 'Reminder sequence cancelled.',
   },
   fr: {
-    back: 'Tableau de bord', due: 'Échéance', reminderSchedule: 'Calendrier des relances',
-    markPaid: 'Marquer payé', cancelSeq: 'Annuler la séquence', cancelling: 'Annulation…',
+    back: 'Factures', due: 'Échéance', reminderSchedule: 'Calendrier des relances',
+    markPaid: 'Marquer payé', cancelSeq: 'Annuler la séquence', cancelling: 'Annulation…', keepIt: 'Conserver',
     exhaustedNote: 'Les 4 relances ont été envoyées. Aucune action supplémentaire ne sera prise automatiquement.',
     confirmPaidTitle: 'Marquer la facture comme payée ?', confirmPaidDesc: 'Toutes les relances restantes seront annulées.',
     confirm: 'Confirmer', cancel: 'Annuler',
     cancelTitle: 'Annuler la séquence de relances ?', cancelDesc: 'Toutes les relances planifiées seront arrêtées.',
     notFound: 'Facture introuvable.', backToDash: 'Retour au tableau de bord',
     statusLabels: { DRAFT: 'Brouillon', ACTIVE: 'Actif', PAID: 'Payé', CANCELLED: 'Annulé', EXHAUSTED: 'Toutes envoyées', FAILED: 'Échoué' },
+    toastPaid: 'Facture marquée comme payée.',
+    toastCancelled: 'Séquence de relances annulée.',
   },
 } as const
 
@@ -62,6 +67,7 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
   const { lang } = useLang()
   const t = T[lang]
   const locale = lang === 'fr' ? 'fr-FR' : 'en-US'
+  const router = useRouter()
 
   const [markingPaid, setMarkingPaid] = useState(false)
   const [cancelling, setCancelling] = useState(false)
@@ -76,12 +82,18 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
   })
   const invoice = data?.invoice
 
+  useEffect(() => {
+    if (invoice?.status === 'DRAFT') {
+      router.replace(`/invoices/${id}/preview`)
+    }
+  }, [invoice, id, router])
+
   async function handleMarkPaid() {
     setMarkingPaid(true)
     try {
       const res = await fetch(`/api/v1/invoices/${id}/paid`, { method: 'PATCH' })
       if (!res.ok) { const d = await res.json(); toast.error(d.error ?? 'Could not mark as paid.'); return }
-      await mutate(); setConfirmOpen(false); toast.success('Invoice marked as paid.')
+      await mutate(); setConfirmOpen(false); toast(t.toastPaid, { style: { background: '#7C3AED', color: '#FFFFFF' } })
     } catch { toast.error('Something went wrong.') }
     finally { setMarkingPaid(false) }
   }
@@ -91,7 +103,7 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
     try {
       const res = await fetch(`/api/v1/invoices/${id}/cancel`, { method: 'PATCH' })
       if (!res.ok) { const d = await res.json(); toast.error(d.error ?? 'Could not cancel.'); return }
-      await mutate(); setCancelOpen(false); toast.success('Reminder sequence cancelled.')
+      await mutate(); setCancelOpen(false); toast(t.toastCancelled, { style: { background: '#7C3AED', color: '#FFFFFF' } })
     } catch { toast.error('Something went wrong.') }
     finally { setCancelling(false) }
   }
@@ -125,7 +137,7 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
   return (
     <>
       <div className="max-w-lg mx-auto space-y-6">
-        <Link href="/dashboard" className="inline-flex items-center gap-1.5 text-sm font-medium hover:underline" style={{ color: '#64748B' }}>
+        <Link href="/invoices" className="inline-flex items-center gap-1.5 text-sm font-medium hover:underline" style={{ color: '#64748B' }}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="15,18 9,12 15,6" />
           </svg>
@@ -221,7 +233,7 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
             <DialogDescription>{t.cancelDesc}</DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <DialogClose render={<Button variant="outline" />}>{t.back}</DialogClose>
+            <DialogClose render={<Button variant="outline" />}>{t.keepIt}</DialogClose>
             <Button
               className="bg-amber-500 hover:bg-amber-600 text-white border-transparent"
               onClick={handleConfirmCancel}

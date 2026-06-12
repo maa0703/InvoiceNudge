@@ -4,6 +4,12 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
+import { useLang } from '@/lib/lang-context'
+
+const T = {
+  en: { toastDeleted: 'Invoice deleted.' },
+  fr: { toastDeleted: 'Facture supprimée.' },
+} as const
 import {
   Dialog,
   DialogContent,
@@ -40,6 +46,8 @@ interface Props {
 }
 
 export function InvoiceListRow({ id, clientName, invoiceRef, dueDate, amount, status }: Props) {
+  const { lang } = useLang()
+  const t = T[lang]
   const router = useRouter()
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
@@ -49,7 +57,7 @@ export function InvoiceListRow({ id, clientName, invoiceRef, dueDate, amount, st
     try {
       const res = await fetch(`/api/v1/invoices/${id}`, { method: 'DELETE' })
       if (!res.ok) { toast.error('Could not delete invoice.'); return }
-      toast.success('Invoice deleted.')
+      toast(t.toastDeleted, { style: { background: '#7C3AED', color: '#FFFFFF' } })
       router.refresh()
     } catch {
       toast.error('Something went wrong.')

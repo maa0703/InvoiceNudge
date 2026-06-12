@@ -3,14 +3,21 @@ import { auth } from '@clerk/nextjs/server'
 import { getCurrentUser } from '@/lib/auth'
 import { updateUserSchema } from '@/lib/validations'
 import * as userService from '@/server/user.service'
+import * as billingService from '@/server/billing.service'
 
-function safeUser(user: NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>) {
+function safeUser(
+  user: NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>,
+  subscriptionPeriodEnd: number | null = null,
+) {
   return {
     id: user.id,
     email: user.email,
     displayName: user.displayName,
+    emailSignatureName: user.emailSignatureName,
     replyToEmail: user.replyToEmail,
     plan: user.plan,
+    subscriptionCancelled: !!user.subscriptionCancelledAt,
+    subscriptionPeriodEnd,
   }
 }
 
@@ -27,7 +34,12 @@ export async function GET(_req: NextRequest) {
   }
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  return NextResponse.json({ user: safeUser(user) })
+  let subscriptionPeriodEnd: number | null = null
+  if (user.subscriptionCancelledAt && user.stripeSubscriptionId) {
+    subscriptionPeriodEnd = await billingService.getSubscriptionPeriodEnd(user.stripeSubscriptionId)
+  }
+
+  return NextResponse.json({ user: safeUser(user, subscriptionPeriodEnd) })
 }
 
 export async function PATCH(req: NextRequest) {

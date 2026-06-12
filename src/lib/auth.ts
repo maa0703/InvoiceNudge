@@ -16,10 +16,13 @@ export const getCurrentUser = cache(async function getCurrentUser() {
   if (!clerkUser) return null
 
   const email = clerkUser.emailAddresses[0]?.emailAddress ?? ''
+  const firstName = clerkUser.firstName ?? ''
+  const lastName = clerkUser.lastName ?? ''
+  const fullName = [firstName, lastName].filter(Boolean).join(' ')
 
   try {
     return await db.user.create({
-      data: { clerkUserId: userId, email, replyToEmail: email },
+      data: { clerkUserId: userId, email, replyToEmail: email, emailSignatureName: fullName },
     })
   } catch (e) {
     // Concurrent request already created the row — just fetch it

@@ -3,6 +3,7 @@ import { auth } from '@clerk/nextjs/server'
 import { getCurrentUser } from '@/lib/auth'
 import * as invoiceService from '@/server/invoice.service'
 import { ServiceError } from '@/server/invoice.service'
+import { updateDraftInvoiceSchema } from '@/lib/validations'
 
 export async function DELETE(
   _req: NextRequest,
@@ -30,6 +31,51 @@ export async function DELETE(
       return NextResponse.json({ error: error.message }, { status: 404 })
     }
     console.error('[DELETE /api/v1/invoices/[id]]', error)
+    return NextResponse.json({ error: 'INTERNAL_ERROR' }, { status: 500 })
+  }
+}
+
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const { userId } = await auth()
+  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  let user: Awaited<ReturnType<typeof getCurrentUser>>
+  try {
+    user = await getCurrentUser()
+  } catch (error) {
+    console.error('[PATCH /api/v1/invoices/[id]] getCurrentUser failed', error)
+    return NextResponse.json({ error: 'INTERNAL_ERROR' }, { status: 500 })
+  }
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const { id } = await params
+
+  let body: unknown
+  try {
+    body = await req.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON' }, { status: 422 })
+  }
+
+  const parsed = updateDraftInvoiceSchema.safeParse(body)
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Validation failed', issues: parsed.error.issues }, { status: 422 })
+  }
+
+  try {
+    const invoice = await invoiceService.updateDraftInvoice(user.id, id, parsed.data)
+    return NextResponse.json({ invoice })
+  } catch (error) {
+    if (error instanceof ServiceError && error.code === 'NOT_FOUND') {
+      return NextResponse.json({ error: error.message }, { status: 404 })
+    }
+    if (error instanceof ServiceError && (error.code === 'NOT_DRAFT' || error.code === 'DUPLICATE_REF')) {
+      return NextResponse.json({ error: error.message }, { status: 409 })
+    }
+    console.error('[PATCH /api/v1/invoices/[id]]', error)
     return NextResponse.json({ error: 'INTERNAL_ERROR' }, { status: 500 })
   }
 }

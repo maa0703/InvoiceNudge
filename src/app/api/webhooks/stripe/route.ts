@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
         if (us) {
           await db.user.update({
             where: { id: us.id },
-            data: { plan: Plan.FREE, stripeSubscriptionId: null },
+            data: { plan: Plan.FREE, stripeSubscriptionId: null, subscriptionCancelledAt: null },
           })
         }
         break

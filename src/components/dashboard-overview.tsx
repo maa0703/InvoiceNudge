@@ -23,8 +23,10 @@ interface Invoice {
 
 const T = {
   en: {
+    greeting: (name: string) => name ? `Hello! ${name} 👋` : 'Hello! 👋',
     title: 'Dashboard',
     subtitle: 'Your invoice activity at a glance.',
+    addInvoice: '+ Add invoice',
     active: 'Active',
     overdue: 'Overdue',
     paid: 'Paid',
@@ -35,14 +37,17 @@ const T = {
     addOne: 'Add one →',
     breakdown: 'Breakdown',
     noData: 'No data yet.',
+    toastActivated: "Reminders activated! We'll check in before every send.",
     statuses: {
       ACTIVE: 'Active', DRAFT: 'Draft', PAID: 'Paid',
       FAILED: 'Failed', EXHAUSTED: 'Exhausted', CANCELLED: 'Cancelled',
     } as Record<Status, string>,
   },
   fr: {
+    greeting: (name: string) => name ? `Bonjour ! ${name} 👋` : 'Bonjour ! 👋',
     title: 'Tableau de bord',
     subtitle: "Votre activité de facturation en un coup d'œil.",
+    addInvoice: '+ Ajouter une facture',
     active: 'Actif',
     overdue: 'En retard',
     paid: 'Payé',
@@ -53,6 +58,7 @@ const T = {
     addOne: 'Ajouter →',
     breakdown: 'Répartition',
     noData: 'Aucune donnée.',
+    toastActivated: 'Relances activées ! Nous vérifierons avant chaque envoi.',
     statuses: {
       ACTIVE: 'Actif', DRAFT: 'Brouillon', PAID: 'Payé',
       FAILED: 'Échoué', EXHAUSTED: 'Terminé', CANCELLED: 'Annulé',
@@ -84,6 +90,8 @@ function Bone({ w, h, r = 8 }: { w: string; h: number; r?: number }) {
 export function DashboardOverview() {
   const searchParams = useSearchParams()
   const { lang } = useLang()
+  const { data: userData } = useSWR('/api/v1/users/me', fetcher)
+  const displayName: string = userData?.user?.displayName ?? ''
   const { data, isLoading } = useSWR('/api/v1/invoices', fetcher, {
     refreshInterval: 30_000,
     revalidateOnFocus: true,
@@ -96,7 +104,7 @@ export function DashboardOverview() {
 
   useEffect(() => {
     if (searchParams.get('activated') === 'true') {
-      toast.success("Reminders activated! We'll check in before every send.")
+      toast(t.toastActivated, { style: { background: '#7C3AED', color: '#FFFFFF' } })
     }
   }, [])
 
@@ -130,9 +138,23 @@ export function DashboardOverview() {
   return (
     <div style={{ maxWidth: 1000 }}>
       {/* ── Header ─────────────────────────────────────── */}
-      <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 700, color: '#1E1B4B', margin: 0 }}>{t.title}</h1>
-        <p style={{ fontSize: 13, color: '#64748B', marginTop: 4, marginBottom: 0 }}>{t.subtitle}</p>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 24, gap: 16 }}>
+        <div>
+          <h1 style={{ fontSize: 26, fontWeight: 800, color: '#1E1B4B', margin: '0 0 2px' }}>{t.greeting(displayName)}</h1>
+          <p style={{ fontSize: 13, color: '#64748B', marginTop: 4, marginBottom: 0 }}>{t.subtitle}</p>
+        </div>
+        <Link
+          href="/invoices/new"
+          data-tour="add-invoice"
+          style={{
+            display: 'inline-flex', alignItems: 'center', flexShrink: 0,
+            padding: '9px 18px', borderRadius: 12, fontSize: 13, fontWeight: 600,
+            color: '#fff', background: 'linear-gradient(135deg,#7C3AED,#6D28D9)',
+            textDecoration: 'none', whiteSpace: 'nowrap',
+          }}
+        >
+          {t.addInvoice}
+        </Link>
       </div>
 
       {/* ── Stat cards ─────────────────────────────────── */}
@@ -166,7 +188,7 @@ export function DashboardOverview() {
         <div style={{ background: '#FFFFFF', borderRadius: 16, border: '1px solid #F0EEFF', overflow: 'hidden' }}>
           <div style={{ padding: '14px 20px', borderBottom: '1px solid #F0EEFF', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <span style={{ fontSize: 14, fontWeight: 600, color: '#1E1B4B' }}>{t.recentInvoices}</span>
-            <Link href="/invoices" style={{ fontSize: 13, fontWeight: 600, color: '#7C3AED', textDecoration: 'none' }}>
+            <Link href="/invoices" data-tour="view-invoices" style={{ fontSize: 13, fontWeight: 600, color: '#7C3AED', textDecoration: 'none' }}>
               {t.viewAll}
             </Link>
           </div>
