@@ -3,10 +3,15 @@ import { auth } from '@clerk/nextjs/server'
 import { getCurrentUser } from '@/lib/auth'
 import * as billingService from '@/server/billing.service'
 import { isStripeError } from '@/server/billing.service'
+import { rateLimit } from '@/lib/rate-limit'
 
 export async function POST(_req: NextRequest) {
   const { userId } = await auth()
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  if (!rateLimit(userId, 5, 60_000)) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+  }
 
   let user: Awaited<ReturnType<typeof getCurrentUser>>
   try {

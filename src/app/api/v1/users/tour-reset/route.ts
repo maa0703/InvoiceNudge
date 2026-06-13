@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { getCurrentUser } from '@/lib/auth'
-import { db } from '@/lib/db'
+import * as userService from '@/server/user.service'
 
 export async function PATCH() {
   const { userId } = await auth()
@@ -17,10 +17,7 @@ export async function PATCH() {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   try {
-    await db.user.update({
-      where: { id: user.id },
-      data: { tourCompletedAt: null },
-    })
+    await userService.resetTour(user.id)
     return NextResponse.json({ reset: true })
   } catch (err) {
     console.error('[PATCH /api/v1/users/tour-reset]', err)

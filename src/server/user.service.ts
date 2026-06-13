@@ -13,3 +13,17 @@ export async function updateUser(
     data,
   })
 }
+
+export async function completeTour(userId: string): Promise<void> {
+  await db.user.updateMany({
+    where: { id: userId, tourCompletedAt: null },
+    data: { tourCompletedAt: new Date() },
+  })
+}
+
+export async function resetTour(userId: string): Promise<void> {
+  await db.user.update({
+    where: { id: userId },
+    data: { tourCompletedAt: null },
+  })
+}

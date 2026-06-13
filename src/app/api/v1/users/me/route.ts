@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
-import { getCurrentUser } from '@/lib/auth'
+import { getCurrentUser, sanitizeUser } from '@/lib/auth'
 import { updateUserSchema } from '@/lib/validations'
 import * as userService from '@/server/user.service'
 import * as billingService from '@/server/billing.service'
@@ -9,16 +9,17 @@ function safeUser(
   user: NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>,
   subscriptionPeriodEnd: number | null = null,
 ) {
+  const base = sanitizeUser(user)
   return {
-    id: user.id,
-    email: user.email,
-    displayName: user.displayName,
-    emailSignatureName: user.emailSignatureName,
-    replyToEmail: user.replyToEmail,
-    plan: user.plan,
-    subscriptionCancelled: !!user.subscriptionCancelledAt,
+    id: base.id,
+    email: base.email,
+    displayName: base.displayName,
+    emailSignatureName: base.emailSignatureName,
+    replyToEmail: base.replyToEmail,
+    plan: base.plan,
+    subscriptionCancelled: !!base.subscriptionCancelledAt,
     subscriptionPeriodEnd,
-    tourCompleted: !!user.tourCompletedAt,
+    tourCompleted: !!base.tourCompletedAt,
   }
 }
 

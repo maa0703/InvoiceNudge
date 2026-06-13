@@ -1,6 +1,13 @@
 import { cache } from 'react'
 import { auth, currentUser } from '@clerk/nextjs/server'
 import { db } from '@/lib/db'
+import type { User } from '@prisma/client'
+
+export function sanitizeUser(user: User) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { clerkUserId, stripeCustomerId, stripeSubscriptionId, deletedAt, ...rest } = user
+  return rest
+}
 
 export const getCurrentUser = cache(async function getCurrentUser() {
   const { userId } = await auth()

@@ -116,7 +116,7 @@ export async function cancelInvoice(userId: string, invoiceId: string) {
     throw new ServiceError('INVALID_STATUS', 'Invoice cannot be cancelled in its current state.')
   }
 
-  const cancelledCount = await reminderRepo.cancelByInvoice(invoiceId, 'manual')
+  const cancelledCount = await reminderRepo.cancelByInvoice(userId, invoiceId, 'manual')
   await invoiceRepo.updateStatus(userId, invoiceId, InvoiceStatus.CANCELLED)
   return { cancelledCount }
 }
@@ -151,6 +151,6 @@ export async function updateDraftInvoice(
 export async function deleteInvoice(userId: string, invoiceId: string) {
   const invoice = await invoiceRepo.findById(userId, invoiceId)
   if (!invoice) throw new ServiceError('NOT_FOUND', 'Invoice not found.')
-  await reminderRepo.cancelByInvoice(invoiceId, 'manual')
+  await reminderRepo.cancelByInvoice(userId, invoiceId, 'manual')
   await invoiceRepo.softDelete(userId, invoiceId)
 }

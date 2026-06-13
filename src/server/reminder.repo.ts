@@ -37,9 +37,9 @@ export async function createBatch(
   )
 }
 
-export async function findByInvoice(invoiceId: string): Promise<Reminder[]> {
+export async function findByInvoice(userId: string, invoiceId: string): Promise<Reminder[]> {
   return db.reminder.findMany({
-    where: { invoiceId },
+    where: { invoiceId, userId },
     orderBy: { step: 'asc' },
   })
 }
@@ -118,9 +118,13 @@ export async function markFailed(
   ])
 }
 
-export async function cancelByInvoice(invoiceId: string, reason: string): Promise<number> {
+export async function cancelByInvoice(
+  userId: string,
+  invoiceId: string,
+  reason: string,
+): Promise<number> {
   const result = await db.reminder.updateMany({
-    where: { invoiceId, status: ReminderStatus.SCHEDULED },
+    where: { invoiceId, userId, status: ReminderStatus.SCHEDULED },
     data: { status: ReminderStatus.CANCELLED, cancelledReason: reason },
   })
   return result.count

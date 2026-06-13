@@ -1,12 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { extractInvoiceFields } from '@/lib/pdf-extractor'
+import { rateLimit } from '@/lib/rate-limit'
 
 const MAX_SIZE = 5 * 1024 * 1024 // 5 MB
 
 export async function POST(req: NextRequest) {
   const { userId } = await auth()
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  if (!rateLimit(userId, 10, 60_000)) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+  }
 
   let formData: FormData
   try {
