@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import { SignOutButton } from '@clerk/nextjs'
+import { Pin, PinOff } from 'lucide-react'
 import { SidebarNav } from './sidebar-nav'
 import { LangProvider, useLang } from '@/lib/lang-context'
 
@@ -50,74 +51,56 @@ function FixedTopRight() {
 function SidebarContent({ isPro, isExpanded, onNavClick }: { isPro: boolean; isExpanded: boolean; onNavClick?: () => void }) {
   const { lang } = useLang()
   const signOutLabel = lang === 'fr' ? 'Déconnexion' : 'Sign out'
-
-  // Text elements share the same transition curve.
-  // Collapsing: fade out fast (no delay), then width shrinks.
-  // Expanding:  width grows first, then fade in (80ms delay).
-  const textShow: React.CSSProperties = {
-    maxWidth: 200,
-    opacity: 1,
-    overflow: 'hidden',
-    whiteSpace: 'nowrap',
-    transition: 'max-width 200ms ease-in-out, opacity 120ms ease-in-out 80ms, margin-left 200ms ease-in-out',
-  }
-  const textHide: React.CSSProperties = {
-    maxWidth: 0,
-    opacity: 0,
-    overflow: 'hidden',
-    whiteSpace: 'nowrap',
-    pointerEvents: 'none',
-    transition: 'max-width 200ms ease-in-out, opacity 80ms ease-in-out, margin-left 200ms ease-in-out',
-  }
-  const textStyle = isExpanded ? textShow : textHide
-
-  const itemPad = '10px 8px'
-  const itemTransition = 'background 150ms ease, color 150ms ease'
+  const collapsed = !isExpanded
 
   return (
     <>
-      {/* Logo */}
+      {/* Logo — both marks always in DOM, crossfade via CSS class opacity */}
       <Link
         href="/"
         onClick={onNavClick}
         style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: isExpanded ? 'flex-start' : 'center',
-          padding: isExpanded ? '0 8px' : '0',
+          display: 'block',
+          position: 'relative',
+          height: 32,
           marginBottom: 32,
-          textDecoration: 'none',
           flexShrink: 0,
-          transition: 'padding 200ms ease-in-out',
+          textDecoration: 'none',
         }}
       >
-        {isExpanded ? (
+        <span
+          className={`nav-logo-full${collapsed ? ' collapsed' : ''}`}
+          style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)' }}
+        >
           <Image src="/favicon.svg" alt="InvoiceNudge" width={120} height={30} unoptimized />
-        ) : (
+        </span>
+        <span
+          className={`nav-logo-icon${!collapsed ? ' expanded' : ''}`}
+          style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)' }}
+        >
           <Image src="/icon.svg" alt="InvoiceNudge" width={28} height={28} unoptimized />
-        )}
+        </span>
       </Link>
 
       {/* Nav */}
       <div onClick={onNavClick} style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        <SidebarNav isExpanded={isExpanded} itemPad={itemPad} itemTransition={itemTransition} textStyle={textStyle} />
+        <SidebarNav isExpanded={isExpanded} />
       </div>
 
       {/* Bottom */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 16, overflow: 'hidden' }}>
-        {/* Plan badge — height collapses instead of unmounting */}
-        <div style={{
-          padding: '0 8px',
-          maxHeight: isExpanded ? 40 : 0,
-          opacity: isExpanded ? 1 : 0,
-          overflow: 'hidden',
-          transition: 'max-height 200ms ease-in-out, opacity 150ms ease-in-out',
-        }}>
-          <span style={isPro
-            ? { background: '#F3F0FF', color: '#7C3AED', fontSize: 12, fontWeight: 600, padding: '3px 12px', borderRadius: 999, display: 'inline-block' }
-            : { background: '#F1F5F9', color: '#64748B', fontSize: 12, fontWeight: 600, padding: '3px 12px', borderRadius: 999, display: 'inline-block' }
-          }>
-            {isPro ? 'Pro' : 'Free'}
+        {/* Plan badge */}
+        <div style={{ padding: '0 8px' }}>
+          <span
+            className={`nav-label${collapsed ? ' collapsed' : ''}`}
+            style={{ display: 'inline-block' }}
+          >
+            <span style={isPro
+              ? { background: '#F3F0FF', color: '#7C3AED', fontSize: 12, fontWeight: 600, padding: '3px 12px', borderRadius: 999, display: 'inline-block' }
+              : { background: '#F1F5F9', color: '#64748B', fontSize: 12, fontWeight: 600, padding: '3px 12px', borderRadius: 999, display: 'inline-block' }
+            }>
+              {isPro ? 'Pro' : 'Free'}
+            </span>
           </span>
         </div>
 
@@ -125,13 +108,13 @@ function SidebarContent({ isPro, isExpanded, onNavClick }: { isPro: boolean; isE
         <SignOutButton>
           <button style={{
             width: '100%', display: 'flex', alignItems: 'center',
-            padding: itemPad,
+            padding: '10px 8px',
             borderRadius: 12, fontSize: 14, fontWeight: 500, color: '#64748B',
             background: 'none', border: 'none', cursor: 'pointer',
-            transition: itemTransition,
+            transition: 'background 150ms ease, color 150ms ease',
           }}>
             <SignOutIcon />
-            <span style={{ ...textStyle, marginLeft: isExpanded ? 8 : 0 }}>
+            <span className={`nav-label${collapsed ? ' collapsed' : ''}`} style={{ marginLeft: 8 }}>
               {signOutLabel}
             </span>
           </button>
@@ -189,13 +172,11 @@ export function AppShell({ isPro, children }: { isPro: boolean; children: React.
       <div style={{ display: 'flex', minHeight: '100vh', background: '#F8F7FF' }}>
         {/* ── Desktop sidebar ─────────────────────────── */}
         <aside
-          className="hidden lg:flex"
+          className={`hidden lg:flex nav-sidebar${!isExpanded ? ' collapsed' : ''}`}
           style={{
             width: sidebarWidth,
             flexShrink: 0,
             flexDirection: 'column',
-            // Horizontal padding transitions in sync with width:
-            // expanded=16px, collapsed=0px so items can use their own padding for centering
             padding: '24px 16px',
             position: 'sticky',
             top: 0,
@@ -203,7 +184,6 @@ export function AppShell({ isPro, children }: { isPro: boolean; children: React.
             background: '#FFFFFF',
             borderRight: '1px solid #F0EEFF',
             overflow: 'hidden',
-            transition: 'width 200ms ease-in-out',
           }}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
@@ -211,35 +191,62 @@ export function AppShell({ isPro, children }: { isPro: boolean; children: React.
           <SidebarContent isPro={isPro} isExpanded={isExpanded} />
         </aside>
 
-        {/* Toggle button — fixed at sidebar's right edge */}
+        {/* ── Pin / Unpin button — straddling sidebar's right edge ── */}
         <div
-          className="hidden lg:flex items-center justify-center"
-          onClick={handleToggle}
+          className={`hidden lg:block group nav-pin-btn${!isExpanded ? ' collapsed' : ''}`}
           style={{
             position: 'fixed',
-            left: sidebarWidth - 12,
+            left: sidebarWidth - 14,
             top: '50vh',
             transform: 'translateY(-50%)',
             zIndex: 50,
-            width: 24,
-            height: 24,
-            borderRadius: '50%',
-            background: '#FFFFFF',
-            border: '1px solid #E8E4DC',
-            boxShadow: '0 1px 4px rgba(0,0,0,0.12)',
-            cursor: 'pointer',
-            transition: 'left 200ms ease-in-out',
           }}
         >
-          {isExpanded ? (
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#64748B" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="15,18 9,12 15,6" />
-            </svg>
-          ) : (
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#64748B" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="9,18 15,12 9,6" />
-            </svg>
-          )}
+          <div className="relative w-7 h-7">
+            {/* Inline label — inside sidebar, fades in on hover when expanded */}
+            <span
+              className={[
+                'absolute right-full mr-2 top-1/2 -translate-y-1/2',
+                'text-xs whitespace-nowrap pointer-events-none select-none',
+                'transition-opacity duration-150 opacity-0',
+                isExpanded ? 'group-hover:opacity-100' : '',
+                isPinned ? 'text-indigo-600' : 'text-[#A8A29E]',
+              ].join(' ')}
+            >
+              {isPinned ? 'Pinned' : 'Pin open'}
+            </span>
+
+            {/* Button circle */}
+            <button
+              onClick={handleToggle}
+              aria-label={isPinned ? 'Unpin sidebar' : 'Pin sidebar open'}
+              className={[
+                'w-7 h-7 rounded-full bg-white',
+                'flex items-center justify-center cursor-pointer',
+                'shadow-sm transition-colors',
+                'border hover:border-indigo-300',
+                isPinned ? 'border-indigo-300' : 'border-[#E8E4DC]',
+              ].join(' ')}
+            >
+              {isPinned
+                ? <Pin size={14} className="text-indigo-600" />
+                : <PinOff size={14} className="text-[#A8A29E]" />
+              }
+            </button>
+
+            {/* Tooltip — right of button, 400 ms show delay, instant hide */}
+            <span
+              className={[
+                'absolute left-full top-1/2 -translate-y-1/2 ml-2',
+                'bg-[#1C1917] text-white text-xs px-2 py-1 rounded-md',
+                'whitespace-nowrap pointer-events-none select-none',
+                'opacity-0 group-hover:opacity-100 transition-opacity duration-150',
+                'group-hover:delay-[400ms]',
+              ].join(' ')}
+            >
+              {isPinned ? 'Unpin sidebar' : 'Pin sidebar open'}
+            </span>
+          </div>
         </div>
 
         {/* ── Mobile drawer overlay ────────────────────── */}

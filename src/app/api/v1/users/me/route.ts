@@ -18,6 +18,7 @@ function safeUser(
     plan: user.plan,
     subscriptionCancelled: !!user.subscriptionCancelledAt,
     subscriptionPeriodEnd,
+    tourCompleted: !!user.tourCompletedAt,
   }
 }
 

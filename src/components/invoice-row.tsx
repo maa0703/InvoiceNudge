@@ -224,15 +224,36 @@ export function InvoiceRow({ invoice, onMarkPaid, onCancel, onDelete }: Props) {
 }
 
 // Mobile card view — used on small screens instead of the table row
-export function InvoiceCard({ invoice, onMarkPaid }: Pick<Props, 'invoice' | 'onMarkPaid'>) {
+export function InvoiceCard({ invoice, onMarkPaid, onCancel, onDelete }: Props) {
   const [markPaidPending, setMarkPaidPending] = useState(false)
   const [markPaidOpen, setMarkPaidOpen] = useState(false)
+  const [cancelPending, setCancelPending] = useState(false)
+  const [cancelOpen, setCancelOpen] = useState(false)
+  const [deletePending, setDeletePending] = useState(false)
+  const [deleteOpen, setDeleteOpen] = useState(false)
 
   async function handleConfirmPaid() {
     setMarkPaidPending(true)
     try { await onMarkPaid(invoice.id); setMarkPaidOpen(false) }
     finally { setMarkPaidPending(false) }
   }
+
+  async function handleConfirmCancel() {
+    if (!onCancel) return
+    setCancelPending(true)
+    try { await onCancel(invoice.id); setCancelOpen(false) }
+    finally { setCancelPending(false) }
+  }
+
+  async function handleConfirmDelete() {
+    if (!onDelete) return
+    setDeletePending(true)
+    try { await onDelete(invoice.id); setDeleteOpen(false) }
+    finally { setDeletePending(false) }
+  }
+
+  const isActive = invoice.status === 'ACTIVE'
+  const hasSecondRow = (isActive && !!onCancel) || !!onDelete
 
   return (
     <>
@@ -254,9 +275,9 @@ export function InvoiceCard({ invoice, onMarkPaid }: Pick<Props, 'invoice' | 'on
           </span>
           <span style={{ fontSize: 13, color: '#64748B' }}>{fmtDate(invoice.dueDate)}</span>
         </div>
-        {/* Actions */}
+        {/* Primary actions: Mark paid + View */}
         <div style={{ display: 'flex', gap: 8 }}>
-          {invoice.status === 'ACTIVE' && (
+          {isActive && (
             <button
               style={{
                 flex: 1, fontSize: 13, fontWeight: 600, borderRadius: 10, cursor: 'pointer',
@@ -281,6 +302,37 @@ export function InvoiceCard({ invoice, onMarkPaid }: Pick<Props, 'invoice' | 'on
             View
           </Link>
         </div>
+        {/* Secondary actions: Cancel + Delete */}
+        {hasSecondRow && (
+          <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+            {isActive && onCancel && (
+              <button
+                style={{
+                  flex: 1, fontSize: 13, fontWeight: 600, borderRadius: 10, cursor: 'pointer',
+                  background: '#FFFBEB', color: '#D97706', border: '1px solid #FDE68A',
+                  padding: '10px 12px', minHeight: 44,
+                }}
+                onClick={() => setCancelOpen(true)}
+                disabled={cancelPending}
+              >
+                {cancelPending ? '…' : 'Cancel'}
+              </button>
+            )}
+            {onDelete && (
+              <button
+                style={{
+                  flex: 1, fontSize: 13, fontWeight: 600, borderRadius: 10, cursor: 'pointer',
+                  background: '#FEF2F2', color: '#EF4444', border: '1px solid #FECACA',
+                  padding: '10px 12px', minHeight: 44,
+                }}
+                onClick={() => setDeleteOpen(true)}
+                disabled={deletePending}
+              >
+                {deletePending ? '…' : 'Delete'}
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       <Dialog open={markPaidOpen} onOpenChange={setMarkPaidOpen}>
@@ -297,6 +349,44 @@ export function InvoiceCard({ invoice, onMarkPaid }: Pick<Props, 'invoice' | 'on
               disabled={markPaidPending}
             >
               {markPaidPending ? <Spinner size={14} /> : 'Confirm'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={cancelOpen} onOpenChange={setCancelOpen}>
+        <DialogContent showCloseButton={false}>
+          <DialogHeader>
+            <DialogTitle>Cancel this invoice?</DialogTitle>
+            <DialogDescription>All scheduled reminders will be stopped. This cannot be undone.</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose render={<Button variant="outline" />}>Back</DialogClose>
+            <Button
+              className="bg-amber-500 hover:bg-amber-600 text-white border-transparent"
+              onClick={handleConfirmCancel}
+              disabled={cancelPending}
+            >
+              {cancelPending ? <Spinner size={14} /> : 'Cancel invoice'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <DialogContent showCloseButton={false}>
+          <DialogHeader>
+            <DialogTitle>Delete this invoice?</DialogTitle>
+            <DialogDescription>This will permanently remove the invoice and cancel any scheduled reminders.</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
+            <Button
+              className="bg-red-500 hover:bg-red-600 text-white border-transparent"
+              onClick={handleConfirmDelete}
+              disabled={deletePending}
+            >
+              {deletePending ? <Spinner size={14} /> : 'Delete'}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -1,11 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { getCurrentUser } from '@/lib/auth'
 import * as invoiceService from '@/server/invoice.service'
 import { ServiceError } from '@/server/invoice.service'
 
 export async function POST(
-  req: NextRequest,
+  _req: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { userId } = await auth()
@@ -24,7 +24,7 @@ export async function POST(
 
   try {
     await invoiceService.activateInvoice(user.id, id)
-    return NextResponse.redirect(new URL('/dashboard?activated=true', req.url))
+    return NextResponse.json({ ok: true })
   } catch (error) {
     if (error instanceof ServiceError) {
       if (error.code === 'NOT_FOUND') return NextResponse.json({ error: error.message }, { status: 404 })

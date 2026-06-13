@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import useSWR from 'swr'
+import useSWR, { mutate } from 'swr'
 import { toast } from 'sonner'
 import { Spinner } from '@/components/ui/spinner'
 import { useLang } from '@/lib/lang-context'
@@ -196,7 +196,7 @@ export default function SettingsPage() {
             </label>
             <input
               id="displayName" value={displayName} onChange={(e) => setDisplayName(e.target.value)}
-              placeholder="Your name" style={inputStyle}
+              placeholder="Your name" style={inputStyle} suppressHydrationWarning
               onFocus={(e) => { e.target.style.borderColor = '#7C3AED'; e.target.style.boxShadow = '0 0 0 3px rgba(124,58,237,0.12)' }}
               onBlur={(e) => { e.target.style.borderColor = '#E8E8F0'; e.target.style.boxShadow = 'none' }}
             />
@@ -207,7 +207,7 @@ export default function SettingsPage() {
             </label>
             <input
               id="replyToEmail" type="email" value={replyToEmail} onChange={(e) => setReplyToEmail(e.target.value)}
-              placeholder="you@example.com" style={inputStyle}
+              placeholder="you@example.com" style={inputStyle} suppressHydrationWarning
               onFocus={(e) => { e.target.style.borderColor = '#7C3AED'; e.target.style.boxShadow = '0 0 0 3px rgba(124,58,237,0.12)' }}
               onBlur={(e) => { e.target.style.borderColor = '#E8E8F0'; e.target.style.boxShadow = 'none' }}
             />
@@ -219,7 +219,7 @@ export default function SettingsPage() {
             </label>
             <input
               id="emailSignatureName" value={emailSignatureName} onChange={(e) => setEmailSignatureName(e.target.value)}
-              placeholder="e.g. Jane, Jane K., Jane — Studio K" style={inputStyle}
+              placeholder="e.g. Jane, Jane K., Jane — Studio K" style={inputStyle} suppressHydrationWarning
               onFocus={(e) => { e.target.style.borderColor = '#7C3AED'; e.target.style.boxShadow = '0 0 0 3px rgba(124,58,237,0.12)' }}
               onBlur={(e) => { e.target.style.borderColor = '#E8E8F0'; e.target.style.boxShadow = 'none' }}
             />
@@ -325,8 +325,11 @@ export default function SettingsPage() {
       {/* Tour reset */}
       <div style={{ textAlign: 'center' }}>
         <button
-          onClick={() => {
+          onClick={async () => {
+            await fetch('/api/v1/users/tour-reset', { method: 'PATCH' }).catch(() => {})
             localStorage.removeItem('invoicenudge-tour-done')
+            // Revalidate the SWR cache so Tour sees tourCompleted: false when dashboard mounts
+            await mutate('/api/v1/users/me')
             router.push('/dashboard')
           }}
           style={{ fontSize: 12, color: '#A8A29E', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}

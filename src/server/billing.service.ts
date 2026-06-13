@@ -1,5 +1,10 @@
+import Stripe from 'stripe'
 import { stripe } from '@/lib/stripe'
 import { db } from '@/lib/db'
+
+if (!process.env.STRIPE_PRO_PRICE_ID) {
+  throw new Error('STRIPE_PRO_PRICE_ID is not set')
+}
 
 export class BillingError extends Error {
   constructor(
@@ -31,9 +36,11 @@ export async function createCheckout(
   const session = await stripe.checkout.sessions.create({
     customer: customerId,
     mode: 'subscription',
+    payment_method_types: ['card'],
     line_items: [{ price: process.env.STRIPE_PRO_PRICE_ID!, quantity: 1 }],
-    success_url: `${baseUrl}/dashboard?activated=true`,
+    success_url: `${baseUrl}/dashboard?activated=true&session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${baseUrl}/settings`,
+    metadata: { userId },
   })
 
   return { url: session.url }
@@ -89,4 +96,10 @@ export async function getSubscriptionPeriodEnd(stripeSubscriptionId: string): Pr
   } catch {
     return null
   }
+}
+
+export function isStripeError(
+  error: unknown,
+): error is InstanceType<typeof Stripe.errors.StripeError> {
+  return error instanceof Stripe.errors.StripeError
 }

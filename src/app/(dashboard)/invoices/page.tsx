@@ -51,7 +51,16 @@ export default function InvoicesPage() {
     revalidateOnReconnect: true,
     dedupingInterval: 5000,
   })
+  const { data: userData } = useSWR('/api/v1/users/me', fetcher, {
+    revalidateOnFocus: false,
+    dedupingInterval: 30000,
+  })
   const all: InvoiceRowData[] = data?.invoices ?? []
+  const isPro = userData?.user?.plan === 'PRO'
+  const atFreeLimit =
+    !isPro &&
+    userData !== undefined &&
+    all.filter((inv) => inv.status === 'DRAFT' || inv.status === 'ACTIVE').length >= 3
 
   const today = new Date()
   today.setHours(0, 0, 0, 0)
@@ -115,8 +124,34 @@ export default function InvoicesPage() {
         </Link>
       </div>
 
+      {/* ── Free-plan limit banner ───────────────────── */}
+      {atFreeLimit && (
+        <div
+          style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            gap: 12, marginBottom: 20, padding: '12px 16px', borderRadius: 12,
+            background: '#F5F3FF', border: '1px solid #DDD6FE',
+          }}
+        >
+          <p style={{ margin: 0, fontSize: 13, color: '#4C1D95' }}>
+            You&apos;ve reached the free plan limit of 3 active invoices.
+          </p>
+          <Link
+            href="/settings"
+            style={{
+              flexShrink: 0, display: 'inline-flex', alignItems: 'center',
+              padding: '7px 14px', borderRadius: 8, fontSize: 13, fontWeight: 600,
+              color: 'white', background: 'linear-gradient(135deg, #7C3AED, #6D28D9)',
+              textDecoration: 'none',
+            }}
+          >
+            Upgrade to Pro
+          </Link>
+        </div>
+      )}
+
       {/* ── Filter tabs ──────────────────────────────── */}
-      <div style={{ display: 'flex', gap: 0, marginBottom: 20, borderBottom: '1px solid #F0EEFF' }}>
+      <div style={{ display: 'flex', gap: 0, marginBottom: 20, borderBottom: '1px solid #F0EEFF', overflowX: 'auto', WebkitOverflowScrolling: 'touch' as const }}>
         {TABS.map((tabKey) => {
           const isActive = tab === tabKey
           return (
@@ -124,7 +159,7 @@ export default function InvoicesPage() {
               key={tabKey}
               onClick={() => setTab(tabKey)}
               style={{
-                padding: '8px 16px', fontSize: 14,
+                padding: '8px 12px', fontSize: 13, flexShrink: 0, whiteSpace: 'nowrap',
                 fontWeight: isActive ? 600 : 400,
                 color: isActive ? '#7C3AED' : '#64748B',
                 background: 'none', border: 'none',
@@ -198,6 +233,8 @@ export default function InvoicesPage() {
                 key={inv.id}
                 invoice={inv}
                 onMarkPaid={handleMarkPaid}
+                onCancel={handleCancel}
+                onDelete={handleDelete}
               />
             ))}
           </div>
@@ -208,20 +245,42 @@ export default function InvoicesPage() {
 }
 
 function LoadingSkeleton() {
+  const card = { background: '#FFFFFF', borderRadius: 16, border: '1px solid #F0EEFF', overflow: 'hidden' }
   return (
-    <div style={{ background: '#FFFFFF', borderRadius: 16, border: '1px solid #F0EEFF', overflow: 'hidden' }}>
-      {[0, 1, 2, 3, 4].map((i) => (
-        <div
-          key={i}
-          className="animate-pulse"
-          style={{ display: 'flex', gap: 16, padding: '16px 20px', borderBottom: i < 4 ? '1px solid #F0EEFF' : undefined }}
-        >
-          {[160, 80, 80, 60, 80].map((w, j) => (
-            <div key={j} style={{ height: 14, width: w, borderRadius: 4, background: '#EDE9FE', flexShrink: 0 }} />
-          ))}
-        </div>
-      ))}
-    </div>
+    <>
+      {/* Desktop skeleton */}
+      <div className="hidden sm:block animate-pulse" style={card}>
+        {[0, 1, 2, 3, 4].map((i) => (
+          <div
+            key={i}
+            style={{ display: 'flex', gap: 16, padding: '16px 20px', borderBottom: i < 4 ? '1px solid #F0EEFF' : undefined }}
+          >
+            {[160, 80, 80, 60, 80].map((w, j) => (
+              <div key={j} style={{ height: 14, width: w, borderRadius: 4, background: '#EDE9FE', flexShrink: 0 }} />
+            ))}
+          </div>
+        ))}
+      </div>
+      {/* Mobile skeleton */}
+      <div className="sm:hidden animate-pulse" style={card}>
+        {[0, 1, 2, 3].map((i) => (
+          <div key={i} style={{ padding: '14px 16px', borderBottom: i < 3 ? '1px solid #E8E4DC' : undefined }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+              <div style={{ height: 14, width: 120, borderRadius: 4, background: '#EDE9FE' }} />
+              <div style={{ height: 18, width: 64, borderRadius: 999, background: '#EDE9FE' }} />
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
+              <div style={{ height: 15, width: 80, borderRadius: 4, background: '#EDE9FE' }} />
+              <div style={{ height: 13, width: 90, borderRadius: 4, background: '#EDE9FE' }} />
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <div style={{ flex: 1, height: 44, borderRadius: 10, background: '#EDE9FE' }} />
+              <div style={{ flex: 1, height: 44, borderRadius: 10, background: '#EDE9FE' }} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </>
   )
 }
 

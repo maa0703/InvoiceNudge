@@ -128,3 +128,106 @@
     @apply font-sans;
   }
 }
+
+/* ── Sidebar navigation choreography ──────────────────────────────────────
+ *
+ * The DESTINATION state's transition governs the animation direction.
+ * Base rule (no modifier) = expanded state  → governs EXPAND transition.
+ * Modifier class (.collapsed / .expanded)   → governs COLLAPSE/HIDE transition.
+ *
+ * COLLAPSE order:  labels 0ms → width+logo 80ms → icons 180ms → icon-mark 200ms
+ * EXPAND  order:   width 0ms  → icons 80ms      → logo 120ms  → labels 160ms
+ * ────────────────────────────────────────────────────────────────────── */
+
+/* Nav text labels (Dashboard / Invoices / Settings / Sign out / plan badge) */
+.nav-label {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+  white-space: nowrap;
+  /* EXPAND: labels appear last, after icons and logo settle */
+  transition: opacity 150ms ease 160ms, transform 150ms ease 160ms;
+}
+.nav-label.collapsed {
+  opacity: 0;
+  transform: translateX(-8px);
+  pointer-events: none;
+  /* COLLAPSE: labels clear first so width shrink reads cleanly */
+  transition: opacity 120ms ease 0ms, transform 120ms ease 0ms;
+}
+
+/* Full wordmark logo */
+.nav-logo-full {
+  opacity: 1;
+  pointer-events: auto;
+  /* EXPAND: fade in after icons return to position */
+  transition: opacity 150ms ease 120ms;
+}
+.nav-logo-full.collapsed {
+  opacity: 0;
+  pointer-events: none;
+  /* COLLAPSE: fades alongside the width shrink */
+  transition: opacity 150ms ease 80ms;
+}
+
+/* Compact icon-only mark — default state is collapsed (visible) */
+.nav-logo-icon {
+  opacity: 1;
+  pointer-events: auto;
+  /* COLLAPSE: appears after full wordmark has finished fading */
+  transition: opacity 100ms ease 200ms;
+}
+.nav-logo-icon.expanded {
+  opacity: 0;
+  pointer-events: none;
+  /* EXPAND: disappears immediately so wordmark has a clean start */
+  transition: opacity 100ms ease 0ms;
+}
+
+/* Sidebar container — cubic-bezier gives natural deceleration */
+.nav-sidebar {
+  /* EXPAND: starts growing immediately */
+  transition: width 220ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+}
+.nav-sidebar.collapsed {
+  /* COLLAPSE: starts shrinking after labels have cleared */
+  transition: width 220ms cubic-bezier(0.4, 0, 0.2, 1) 80ms;
+}
+
+/* Pin button — tracks sidebar right edge with identical timing */
+.nav-pin-btn {
+  transition: left 220ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+}
+.nav-pin-btn.collapsed {
+  transition: left 220ms cubic-bezier(0.4, 0, 0.2, 1) 80ms;
+}
+
+/* Nav icon wrappers */
+.nav-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* EXPAND: icons return to position early in the sequence */
+  transition: transform 150ms ease 80ms;
+}
+.nav-icon.collapsed {
+  /* COLLAPSE: icons shift only after labels are fully gone */
+  transition: transform 150ms ease 180ms;
+}
+
+/* Nav item pill (the coloured background on links) */
+.nav-pill {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 12px;
+  transition: border-radius 200ms ease,
+              background-color 150ms ease,
+              color 150ms ease;
+}
+.nav-pill.collapsed {
+  border-radius: 10px;
+}

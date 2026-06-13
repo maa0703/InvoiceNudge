@@ -45,20 +45,13 @@ const NAV = [
 ]
 
 interface SidebarNavProps {
-  isExpanded?: boolean
-  itemPad?: string
-  itemTransition?: string
-  textStyle?: React.CSSProperties
+  isExpanded: boolean
 }
 
-export function SidebarNav({
-  isExpanded = true,
-  itemPad = '10px 16px',
-  itemTransition = 'background 150ms ease, color 150ms ease',
-  textStyle = { overflow: 'hidden', whiteSpace: 'nowrap' },
-}: SidebarNavProps) {
+export function SidebarNav({ isExpanded }: SidebarNavProps) {
   const pathname = usePathname()
   const { lang } = useLang()
+  const collapsed = !isExpanded
 
   return (
     <nav style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1 }}>
@@ -71,23 +64,20 @@ export function SidebarNav({
           <Link
             key={label}
             href={href}
+            className={`nav-pill${collapsed ? ' collapsed' : ''}`}
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              borderRadius: 12,
-              padding: itemPad,
-              textDecoration: 'none',
-              fontSize: 14,
-              fontWeight: 500,
-              transition: itemTransition,
-              ...(active
-                ? { background: '#7C3AED', color: 'white' }
-                : { color: '#64748B' }),
+              padding: '10px 8px',
+              color: active ? 'white' : '#64748B',
+              backgroundColor: active ? '#7C3AED' : 'transparent',
             }}
           >
-            {icon}
-            {/* Text stays in DOM — hidden via opacity+max-width, not conditional rendering */}
-            <span style={{ ...textStyle, marginLeft: isExpanded ? 12 : 0 }}>
+            <span className={`nav-icon${collapsed ? ' collapsed' : ''}`}>
+              {icon}
+            </span>
+            <span
+              className={`nav-label${collapsed ? ' collapsed' : ''}`}
+              style={{ marginLeft: 12 }}
+            >
               {displayLabel}
             </span>
           </Link>

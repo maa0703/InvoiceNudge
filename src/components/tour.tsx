@@ -1,12 +1,13 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import useSWR from 'swr'
 
 const STORAGE_KEY = 'invoicenudge-tour-done'
-const W = 256 // tooltip card width px
+const W = 256
 
 interface Step {
-  target: string | null  // value of data-tour attribute; null = floating
+  target: string | null
   title: string
   text: string
   position: 'below' | 'above' | 'center'
@@ -15,26 +16,26 @@ interface Step {
 const STEPS: Step[] = [
   {
     target: 'add-invoice',
-    title: 'Start here',
-    text: 'Add your first invoice. Upload a PDF or fill in 3 fields manually.',
+    title: 'Add more invoices',
+    text: "Want to add another? It's always here.",
     position: 'below',
   },
   {
-    target: null,
-    title: 'Automatic follow-ups',
-    text: 'Once activated, we send up to 4 reminders after the due date. Tone escalates gradually.',
-    position: 'center',
+    target: 'first-invoice-row',
+    title: 'Your active invoice',
+    text: "We'll follow up automatically after the due date. Up to 4 reminders, tone escalates gradually.",
+    position: 'below',
   },
   {
-    target: null,
-    title: 'We warn you first',
-    text: '3 hours before every reminder, we email you. One click to cancel if your client already paid.',
-    position: 'center',
+    target: 'first-invoice-status',
+    title: 'Track every reminder',
+    text: 'Track every reminder here — sent, scheduled, or cancelled.',
+    position: 'above',
   },
   {
-    target: 'view-invoices',
+    target: 'first-invoice-paid',
     title: 'Close the loop',
-    text: 'Open any invoice and click "Mark paid". All remaining reminders cancel instantly.',
+    text: 'When your client pays, close it here. All reminders stop.',
     position: 'above',
   },
 ]
@@ -45,7 +46,7 @@ interface Coords {
   arrow: 'up' | 'down' | 'none'
 }
 
-const CARD_H = 168 // conservative card height estimate for 'above' positioning
+const CARD_H = 168
 const GAP = 12
 
 function calcCoords(step: Step): Coords {
@@ -60,7 +61,7 @@ function calcCoords(step: Step): Coords {
   if (!el) return centered
 
   const r = el.getBoundingClientRect()
-  const safeLeft = Math.min(Math.round(r.left), window.innerWidth - W - 16)
+  const safeLeft = Math.max(16, Math.min(Math.round(r.left), window.innerWidth - W - 16))
 
   if (step.position === 'below') {
     return { top: Math.round(r.bottom + GAP), left: safeLeft, arrow: 'up' }
@@ -70,8 +71,6 @@ function calcCoords(step: Step): Coords {
   }
   return centered
 }
-
-// ── Sub-components ─────────────────────────────────────────────────────────────
 
 function ArrowUp() {
   return (
@@ -91,23 +90,44 @@ function ArrowDown() {
   )
 }
 
-// ── Main component ─────────────────────────────────────────────────────────────
+const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
 export function Tour() {
+  // Fast path: if localStorage already says done, skip all API calls
+  const [localDone] = useState(() =>
+    typeof window !== 'undefined' && localStorage.getItem(STORAGE_KEY) === 'true'
+  )
+
+  const { data: userData } = useSWR(!localDone ? '/api/v1/users/me' : null, fetcher)
+  const { data: invoiceData } = useSWR(!localDone ? '/api/v1/invoices' : null, fetcher)
+
+  const [dismissed, setDismissed] = useState(false)
   const [step, setStep] = useState(0)
   const [visible, setVisible] = useState(false)
   const [coords, setCoords] = useState<Coords>({ top: 0, left: 0, arrow: 'none' })
   const [hlRect, setHlRect] = useState<{ top: number; left: number; width: number; height: number } | null>(null)
 
-  // Only start tour if localStorage flag is absent
+  // Determine whether to show the tour once all data is loaded
   useEffect(() => {
-    const done = localStorage.getItem(STORAGE_KEY)
-    if (done) return
+    if (localDone || dismissed) return
+    if (!userData || !invoiceData) return
+
+    // DB says tour already done — cache it and stop
+    if (userData.user?.tourCompleted) {
+      localStorage.setItem(STORAGE_KEY, 'true')
+      return
+    }
+
+    // Only show after at least one invoice has been activated
+    const invoices: { status: string }[] = invoiceData.invoices ?? []
+    const hasActive = invoices.some((inv) => inv.status === 'ACTIVE')
+    if (!hasActive) return
+
     const id = setTimeout(() => setVisible(true), 700)
     return () => clearTimeout(id)
-  }, [])
+  }, [localDone, dismissed, userData, invoiceData])
 
-  // Recompute position and highlight rect whenever step changes
+  // Recompute tooltip position and highlight rect on step change
   useEffect(() => {
     if (!visible) return
     const s = STEPS[step]
@@ -126,10 +146,12 @@ export function Tour() {
   }, [visible, step])
 
   const finish = useCallback(() => {
+    fetch('/api/v1/users/tour-complete', { method: 'PATCH' }).catch(() => {})
     localStorage.setItem(STORAGE_KEY, 'true')
+    setDismissed(true)
     setVisible(false)
     setHlRect(null)
-  }, [])
+  }, [setDismissed])
 
   const next = useCallback(() => {
     if (step >= STEPS.length - 1) finish()
@@ -143,7 +165,6 @@ export function Tour() {
 
   return (
     <>
-      {/* Pulse animation — scoped to avoid conflicts */}
       <style>{`
         @keyframes _tn_pulse {
           0%,100% { box-shadow: 0 0 0 0 rgba(99,102,241,0.55); }
@@ -151,7 +172,6 @@ export function Tour() {
         }
       `}</style>
 
-      {/* Highlight ring around the target element */}
       {hlRect && (
         <div
           aria-hidden="true"
@@ -170,23 +190,15 @@ export function Tour() {
         />
       )}
 
-      {/* Tooltip wrapper — fixed so it floats over all content */}
       <div
         role="dialog"
         aria-modal="false"
         aria-label={`Intro tour, step ${step + 1} of ${STEPS.length}`}
-        style={{
-          position: 'fixed',
-          top: coords.top,
-          left: coords.left,
-          width: W,
-          zIndex: 9999,
-        }}
+        style={{ position: 'fixed', top: coords.top, left: coords.left, width: W, zIndex: 9999 }}
       >
         {coords.arrow === 'up'   && <ArrowUp />}
         {coords.arrow === 'down' && <ArrowDown />}
 
-        {/* Card */}
         <div
           style={{
             background: '#fff',
@@ -196,22 +208,15 @@ export function Tour() {
             padding: '14px 16px',
           }}
         >
-          {/* Step counter */}
           <p style={{ fontSize: 11, color: '#A8A29E', margin: 0, userSelect: 'none' }}>
             {step + 1} of {STEPS.length}
           </p>
-
-          {/* Title */}
           <p style={{ fontSize: 14, fontWeight: 600, color: '#1C1917', margin: '4px 0 0' }}>
             {s.title}
           </p>
-
-          {/* Body */}
           <p style={{ fontSize: 13, color: '#78716C', lineHeight: 1.55, margin: '6px 0 0' }}>
             {s.text}
           </p>
-
-          {/* Actions */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 14 }}>
             <button
               onClick={finish}

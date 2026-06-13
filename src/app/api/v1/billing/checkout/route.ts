@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { getCurrentUser } from '@/lib/auth'
 import * as billingService from '@/server/billing.service'
+import { isStripeError } from '@/server/billing.service'
 
 export async function POST(_req: NextRequest) {
   const { userId } = await auth()
@@ -24,6 +25,17 @@ export async function POST(_req: NextRequest) {
     )
     return NextResponse.json(result)
   } catch (error) {
+    if (isStripeError(error)) {
+      console.error('[POST /api/v1/billing/checkout] Stripe error', {
+        type: error.type,
+        code: error.code,
+        message: error.message,
+      })
+      return NextResponse.json(
+        { error: 'Payment service error. Please try again.' },
+        { status: 502 },
+      )
+    }
     console.error('[POST /api/v1/billing/checkout]', error)
     return NextResponse.json({ error: 'INTERNAL_ERROR' }, { status: 500 })
   }

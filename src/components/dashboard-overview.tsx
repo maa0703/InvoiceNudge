@@ -1,11 +1,17 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import useSWR from 'swr'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
 import { useLang } from '@/lib/lang-context'
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle,
+  DialogDescription, DialogFooter, DialogClose,
+} from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { Spinner } from '@/components/ui/spinner'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
@@ -92,7 +98,7 @@ export function DashboardOverview() {
   const { lang } = useLang()
   const { data: userData } = useSWR('/api/v1/users/me', fetcher)
   const displayName: string = userData?.user?.displayName ?? ''
-  const { data, isLoading } = useSWR('/api/v1/invoices', fetcher, {
+  const { data, isLoading, mutate } = useSWR('/api/v1/invoices', fetcher, {
     refreshInterval: 30_000,
     revalidateOnFocus: true,
     revalidateOnReconnect: true,
@@ -102,11 +108,32 @@ export function DashboardOverview() {
   const t = T[lang]
   const locale = lang === 'fr' ? 'fr-FR' : 'en-US'
 
+  const [markPaidId, setMarkPaidId] = useState<string | null>(null)
+  const [markPaidPending, setMarkPaidPending] = useState(false)
+
   useEffect(() => {
     if (searchParams.get('activated') === 'true') {
       toast(t.toastActivated, { style: { background: '#7C3AED', color: '#FFFFFF' } })
     }
   }, [])
+
+  async function handleMarkPaid() {
+    if (!markPaidId) return
+    setMarkPaidPending(true)
+    try {
+      const res = await fetch(`/api/v1/invoices/${markPaidId}/paid`, { method: 'PATCH' })
+      if (!res.ok) { toast.error('Could not mark as paid.'); return }
+      await mutate()
+      setMarkPaidId(null)
+      toast(lang === 'fr' ? 'Facture marquée comme payée.' : 'Invoice marked as paid.', {
+        style: { background: '#7C3AED', color: '#FFFFFF' },
+      })
+    } catch {
+      toast.error('Something went wrong.')
+    } finally {
+      setMarkPaidPending(false)
+    }
+  }
 
   const today = new Date()
   today.setHours(0, 0, 0, 0)
@@ -188,7 +215,7 @@ export function DashboardOverview() {
         <div style={{ background: '#FFFFFF', borderRadius: 16, border: '1px solid #F0EEFF', overflow: 'hidden' }}>
           <div style={{ padding: '14px 20px', borderBottom: '1px solid #F0EEFF', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <span style={{ fontSize: 14, fontWeight: 600, color: '#1E1B4B' }}>{t.recentInvoices}</span>
-            <Link href="/invoices" data-tour="view-invoices" style={{ fontSize: 13, fontWeight: 600, color: '#7C3AED', textDecoration: 'none' }}>
+            <Link href="/invoices" style={{ fontSize: 13, fontWeight: 600, color: '#7C3AED', textDecoration: 'none' }}>
               {t.viewAll}
             </Link>
           </div>
@@ -206,41 +233,63 @@ export function DashboardOverview() {
             </div>
           ) : (
             <>
-              {recent.map((inv, idx) => {
-                const s = STATUS_COLORS[inv.status]
-                return (
-                  <Link
-                    key={inv.id}
-                    href={`/invoices/${inv.id}`}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 12,
-                      padding: '11px 20px',
-                      borderBottom: idx < recent.length - 1 ? '1px solid #F0EEFF' : undefined,
-                      textDecoration: 'none',
-                      transition: 'background 0.1s',
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.background = '#FAFAFE')}
-                    onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-                  >
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ fontSize: 13, fontWeight: 600, color: '#1E1B4B', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {inv.client.name}
-                      </p>
-                      <p style={{ fontSize: 11, color: '#94A3B8', margin: 0, marginTop: 1 }}>{fmtDate(inv.dueDate, locale)}</p>
+              {(() => {
+                const firstActiveIdx = recent.findIndex((i) => i.status === 'ACTIVE')
+                return recent.map((inv, idx) => {
+                  const s = STATUS_COLORS[inv.status]
+                  const isFirst = idx === 0
+                  const isFirstActive = idx === firstActiveIdx
+                  return (
+                    <div
+                      key={inv.id}
+                      data-tour={isFirst ? 'first-invoice-row' : undefined}
+                      style={{ borderBottom: idx < recent.length - 1 ? '1px solid #F0EEFF' : undefined }}
+                    >
+                      <Link
+                        href={`/invoices/${inv.id}`}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: 12,
+                          padding: '11px 20px', textDecoration: 'none', transition: 'background 0.1s',
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = '#FAFAFE')}
+                        onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                      >
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p style={{ fontSize: 13, fontWeight: 600, color: '#1E1B4B', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {inv.client.name}
+                          </p>
+                          <p style={{ fontSize: 11, color: '#94A3B8', margin: 0, marginTop: 1 }}>{fmtDate(inv.dueDate, locale)}</p>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                          <span style={{ fontSize: 12, fontWeight: 700, color: '#1E1B4B' }}>
+                            {fmtFull(inv.amount, inv.currency, locale)}
+                          </span>
+                          <span
+                            data-tour={isFirst ? 'first-invoice-status' : undefined}
+                            style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 999, background: s.bg, color: s.fg }}
+                          >
+                            {t.statuses[inv.status]}
+                          </span>
+                        </div>
+                      </Link>
+                      {inv.status === 'ACTIVE' && (
+                        <div style={{ padding: '0 20px 10px', display: 'flex', justifyContent: 'flex-end' }}>
+                          <button
+                            data-tour={isFirstActive ? 'first-invoice-paid' : undefined}
+                            onClick={() => setMarkPaidId(inv.id)}
+                            style={{
+                              fontSize: 12, fontWeight: 600, padding: '3px 10px', borderRadius: 8, cursor: 'pointer',
+                              background: '#ECFDF5', color: '#059669', border: '1px solid #A7F3D0',
+                            }}
+                          >
+                            Mark paid
+                          </button>
+                        </div>
+                      )}
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-                      <span style={{ fontSize: 12, fontWeight: 700, color: '#1E1B4B' }}>
-                        {fmtFull(inv.amount, inv.currency, locale)}
-                      </span>
-                      <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 999, background: s.bg, color: s.fg }}>
-                        {t.statuses[inv.status]}
-                      </span>
-                    </div>
-                  </Link>
-                )
-              })}
+                  )
+                })
+              })()}
             </>
           )}
         </div>
@@ -284,6 +333,25 @@ export function DashboardOverview() {
         </div>
 
       </div>
+
+      <Dialog open={!!markPaidId} onOpenChange={(open) => { if (!open) setMarkPaidId(null) }}>
+        <DialogContent showCloseButton={false}>
+          <DialogHeader>
+            <DialogTitle>Mark invoice as paid?</DialogTitle>
+            <DialogDescription>All remaining reminders will be cancelled.</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
+            <Button
+              className="bg-emerald-500 hover:bg-emerald-600 text-white border-transparent"
+              onClick={handleMarkPaid}
+              disabled={markPaidPending}
+            >
+              {markPaidPending ? <Spinner size={14} /> : 'Confirm'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

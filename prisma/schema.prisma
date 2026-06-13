@@ -17,6 +17,7 @@ model User {
   stripeCustomerId          String?
   stripeSubscriptionId      String?
   subscriptionCancelledAt   DateTime?
+  tourCompletedAt           DateTime?
   createdAt                 DateTime   @default(now())
   updatedAt            DateTime   @updatedAt
   deletedAt            DateTime?
